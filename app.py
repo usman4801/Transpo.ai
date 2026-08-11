@@ -18,7 +18,7 @@ st.set_page_config(
 )
 
 # ==========================================
-# CUSTOM ULTRA-PREMIUM CYBERPUNK CSS (NEW SHAPES)
+# CUSTOM ULTRA-PREMIUM ORGANIC PILL CSS
 # ==========================================
 st.markdown(
     """
@@ -29,7 +29,7 @@ st.markdown(
     
     /* Luxury Dark-Purple Gradient Background Theme */
     .stApp {
-        background: linear-gradient(135deg, #090d16 0%, #171033 50%, #260c38 100%);
+        background: linear-gradient(135deg, #050811 0%, #120c24 50%, #1f082e 100%);
         font-family: 'Inter', 'Segoe UI', sans-serif;
         color: #f8fafc;
     }
@@ -56,29 +56,26 @@ st.markdown(
         margin-bottom: 35px;
     }
 
-    /* UNIQUE CYBER-PILL / SHAPED METRIC CARDS */
-    .cyber-metric-card {
-        background: linear-gradient(145deg, rgba(30, 27, 75, 0.6), rgba(15, 23, 42, 0.8));
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        /* Unique Rounded Diagonal Cut & Neon Border */
-        border: 2px solid transparent;
-        border-image: linear-gradient(135deg, #a855f7, #ec4899, #38bdf8) 1;
-        border-radius: 35px 10px 35px 10px; 
-        padding: 28px 20px;
+    /* ORGANIC FLOATING PILL CARDS (No More Squares!) */
+    .organic-pill-card {
+        background: radial-gradient(circle at top left, rgba(168, 85, 247, 0.15), rgba(15, 23, 42, 0.7));
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border: 1px solid rgba(168, 85, 247, 0.25);
+        /* Completely organic pill / capsule round shape */
+        border-radius: 50px; 
+        padding: 30px 20px;
         text-align: center;
-        box-shadow: 0 15px 35px rgba(168, 85, 247, 0.15);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(236, 72, 153, 0.1);
         transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        position: relative;
-        overflow: hidden;
     }
-    .cyber-metric-card:hover {
-        transform: translateY(-8px) scale(1.02);
-        box-shadow: 0 20px 45px rgba(236, 72, 153, 0.3);
-        border-image: linear-gradient(135deg, #38bdf8, #a855f7, #ec4899) 1;
+    .organic-pill-card:hover {
+        transform: translateY(-8px) scale(1.03);
+        border-color: rgba(236, 72, 153, 0.6);
+        box-shadow: 0 25px 50px rgba(236, 72, 153, 0.25);
     }
-    .metric-value { font-size: 40px; font-weight: 900; color: #ffffff; text-shadow: 0 0 15px rgba(168, 85, 247, 0.5); }
-    .metric-label { font-size: 12px; color: #cbd5e1; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-top: 8px; }
+    .metric-value { font-size: 38px; font-weight: 900; color: #ffffff; text-shadow: 0 0 20px rgba(192, 132, 252, 0.6); }
+    .metric-label { font-size: 11px; color: #cbd5e1; font-weight: 800; text-transform: uppercase; letter-spacing: 2.5px; margin-top: 6px; }
 
     /* Neon Gradient Buttons */
     .stButton>button {
@@ -86,7 +83,7 @@ st.markdown(
         color: white !important;
         font-size: 15px !important;
         font-weight: 700 !important;
-        border-radius: 14px !important;
+        border-radius: 30px !important;
         border: none !important;
         padding: 14px 24px !important;
         width: 100%;
@@ -104,7 +101,7 @@ st.markdown(
         backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.06);
         padding: 20px 24px;
-        border-radius: 16px;
+        border-radius: 24px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         border-left: 5px solid #ec4899;
         margin-bottom: 16px;
@@ -265,14 +262,14 @@ with st.sidebar:
 st.markdown('<div class="dash-title">Workforce MailSync AI ✨</div>', unsafe_allow_html=True)
 st.markdown('<div class="dash-subtitle">Next-Gen Intelligent Same-Day Leave & Annual Response System</div>', unsafe_allow_html=True)
 
-# Cyber-Shaped Cards Row
+# Organic Pill Cards Row (No Squares!)
 col1, col2, col3 = st.columns(3)
 with col1:
-    st.markdown('<div class="cyber-metric-card"><div class="metric-value">--</div><div class="metric-label">Today Scanned</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="organic-pill-card"><div class="metric-value">--</div><div class="metric-label">Today Scanned</div></div>', unsafe_allow_html=True)
 with col2:
-    st.markdown('<div class="cyber-metric-card"><div class="metric-value" style="color:#38bdf8;">--</div><div class="metric-label">Replies Dispatched</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="organic-pill-card"><div class="metric-value" style="color:#38bdf8;">--</div><div class="metric-label">Replies Dispatched</div></div>', unsafe_allow_html=True)
 with col3:
-    st.markdown('<div class="cyber-metric-card"><div class="metric-value" style="color:#c084fc;">100%</div><div class="metric-label">Context Match</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="organic-pill-card"><div class="metric-value" style="color:#c084fc;">100%</div><div class="metric-label">Context Match</div></div>', unsafe_allow_html=True)
 
 st.markdown("<br><br>", unsafe_allow_html=True)
 
