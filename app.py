@@ -90,15 +90,12 @@ st.markdown(
         padding: 20px;
         border-radius: 14px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-        border-left: 6px solid #4f46e5;
+        border-left: 6px solid #f59e0b;
         margin-bottom: 15px;
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
-    .email-card.leave { border-left-color: #f59e0b; }
-    .email-card.mispunch { border-left-color: #ef4444; }
-    .email-card.shift { border-left-color: #10b981; }
 
     .email-details h4 { margin: 0; color: #1e293b; font-size: 18px; font-weight: 700; }
     .email-details p { margin: 4px 0 0 0; color: #64748b; font-size: 14px; }
@@ -110,19 +107,18 @@ st.markdown(
         font-weight: 700;
         text-transform: uppercase;
         display: inline-block;
+        background: #fef3c7; 
+        color: #d97706;
     }
-    .badge-leave { background: #fef3c7; color: #d97706; }
-    .badge-mispunch { background: #fee2e2; color: #dc2626; }
-    .badge-shift { background: #d1fae5; color: #059669; }
     </style>
     """,
     unsafe_allow_html=True
 )
 
 # ==========================================
-# OUTLOOK AUTO-REPLY LOGIC (IMAP / SMTP)
+# OUTLOOK LEAVE AUTO-REPLY LOGIC
 # ==========================================
-def fetch_and_reply_outlook(email_user, email_pass, target_inbox):
+def fetch_and_reply_leave_outlook(email_user, email_pass, target_inbox):
     processed_logs = []
     try:
         # 1. Connect to Outlook IMAP server
@@ -160,17 +156,16 @@ def fetch_and_reply_outlook(email_user, email_pass, target_inbox):
 
                     body_lower = body.lower()
 
-                    # 2. Keyword Filtering (Leave / Sick / Mispunch)
-                    if any(word in body_lower for word in ["sick", "chutti", "leave", "fever", "emergency", "absent"]):
+                    # 2. Strict Leave Keyword Filtering (Sirf Chutti/Leave wali emails)
+                    leave_keywords = ["sick", "chutti", "leave", "fever", "emergency", "absent", "cant come", "can't come", "not coming", "ill"]
+                    
+                    if any(word in body_lower for word in leave_keywords):
                         category = "Leave Request"
-                        badge_class = "leave"
-                        reply_text = f"Dear Employee,\n\nYour leave request regarding '{subject}' has been received and noted by HR. Rest well and take care.\n\nBest Regards,\nHR Team - Amazon ({target_inbox})"
-                    elif any(word in body_lower for word in ["punch", "mispunch", "missed", "timing"]):
-                        category = "Mispunch"
-                        badge_class = "mispunch"
-                        reply_text = f"Dear Employee,\n\nYour missing punch query has been logged and forwarded to attendance management.\n\nBest Regards,\nHR Team - Amazon ({target_inbox})"
+                        
+                        # Personalized Auto-Reply text for leave
+                        reply_text = f"Dear Employee,\n\nYour leave request for today has been received and noted by HR. Rest well and take care of your health.\n\nBest Regards,\nHR Team - Amazon ({target_inbox})"
                     else:
-                        continue # Skip other emails
+                        continue # Agar email chutti ki nahi hai toh ignore kar do
 
                     # 3. Send Auto-Reply via SMTP
                     try:
@@ -195,7 +190,6 @@ def fetch_and_reply_outlook(email_user, email_pass, target_inbox):
                         "from": from_whom,
                         "summary": body[:90] + "...",
                         "category": category,
-                        "badge": badge_class,
                         "action": status_action
                     })
 
@@ -210,70 +204,67 @@ def fetch_and_reply_outlook(email_user, email_pass, target_inbox):
 # ==========================================
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/2646/2646141.png", width=60)
-    st.markdown("### ⚙️ Outlook Integration")
+    st.markdown("### ⚙️ Outlook Leave Sync")
     outlook_email = st.text_input("HR Inbox Email", value="auh1-fc-pxt@amazon.ae", placeholder="auh1-fc-pxt@amazon.ae")
     outlook_pass = st.text_input("Outlook App Password", type="password", placeholder="Enter app password...")
-    auto_mode = st.selectbox("Auto-Reply Mode", ["Fully Automated (Send Direct)", "Draft Only (Require Approval)", "Off"])
     st.markdown("<hr>", unsafe_allow_html=True)
-    st.markdown("<p style='color:gray; font-size:12px;'>System Status: 🟢 <b>Ready</b></p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:gray; font-size:12px;'>System Status: 🟢 <b>Ready for Leave Tracking</b></p>", unsafe_allow_html=True)
 
 # ==========================================
 # MAIN DASHBOARD HEADER
 # ==========================================
 st.markdown('<div class="dash-title">Workforce MailSync AI ✨</div>', unsafe_allow_html=True)
-st.markdown('<div class="dash-subtitle">Intelligent Outlook Email Parsing & Automated HR Actions System</div>', unsafe_allow_html=True)
+st.markdown('<div class="dash-subtitle">Automated Leave Response System for Amazon HR (`auh1-fc-pxt@amazon.ae`)</div>', unsafe_allow_html=True)
 
 # Metrics Row
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3 = st.columns(3)
 with col1:
-    st.markdown('<div class="ai-metric-card"><div class="metric-value">142</div><div class="metric-label">Emails Scanned</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="ai-metric-card"><div class="metric-value">--</div><div class="metric-label">Today Scanned</div></div>', unsafe_allow_html=True)
 with col2:
-    st.markdown('<div class="ai-metric-card"><div class="metric-value" style="color:#10b981;">118</div><div class="metric-label">Auto-Resolved</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="ai-metric-card"><div class="metric-value" style="color:#10b981;">--</div><div class="metric-label">Leave Replies Sent</div></div>', unsafe_allow_html=True)
 with col3:
-    st.markdown('<div class="ai-metric-card"><div class="metric-value" style="color:#f59e0b;">24</div><div class="metric-label">Pending Review</div></div>', unsafe_allow_html=True)
-with col4:
-    st.markdown('<div class="ai-metric-card"><div class="metric-value" style="color:#4f46e5;">98%</div><div class="metric-label">AI Accuracy</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="ai-metric-card"><div class="metric-value" style="color:#4f46e5;">100%</div><div class="metric-label">Targeted Focus</div></div>', unsafe_allow_html=True)
 
 st.markdown("<br><br>", unsafe_allow_html=True)
 
 # ==========================================
 # LIVE SCANNER SECTION
 # ==========================================
-if 'live_results' not in st.session_state:
-    st.session_state.live_results = None
+if 'leave_results' not in st.session_state:
+    st.session_state.leave_results = None
 
 action_col, text_col = st.columns([3, 7])
 
 with action_col:
-    st.markdown("### 🤖 Outlook Sync")
-    st.write("Click below to fetch unread emails from **auh1-fc-pxt@amazon.ae** and execute auto-replies.")
-    if st.button("Fetch & Process Live Emails ➔"):
+    st.markdown("### 🤖 Check Today's Leaves")
+    st.write("Click below to scan unread emails sent to **auh1-fc-pxt@amazon.ae** and auto-reply only to leave requests.")
+    if st.button("Fetch & Auto-Reply Leaves ➔"):
         if not outlook_pass:
             st.warning("Please enter your Outlook App Password in the sidebar first!")
         else:
-            with st.spinner("Connecting to Outlook Mail Server..."):
-                results = fetch_and_reply_outlook(outlook_email, outlook_pass, outlook_email)
-                st.session_state.live_results = results
-            st.success(f"Sync Complete! {len(results)} leave/mispunch requests processed.")
+            with st.spinner("Scanning inbox for day-leave requests..."):
+                results = fetch_and_reply_leave_outlook(outlook_email, outlook_pass, outlook_email)
+                st.session_state.leave_results = results
+            st.success(f"Done! Processed {len(results)} employee leave requests.")
 
 with text_col:
-    st.markdown("### 📥 Filtered & Replied Emails")
+    st.markdown("### 📥 Today's Processed Leave Emails")
     
-    if st.session_state.live_results is None:
-        st.info("Click 'Fetch & Process Live Emails' to scan incoming mail from Amazon associates.")
-    elif len(st.session_state.live_results) == 0:
-        st.warning("No new matching leave requests or mispunches found in the inbox.")
+    if st.session_state.leave_results is None:
+        st.info("Click the button on the left to scan incoming unread emails.")
+    elif len(st.session_state.leave_results) == 0:
+        st.warning("No new leave requests found in the inbox.")
     else:
-        for item in st.session_state.live_results:
+        for item in st.session_state.leave_results:
             card_html = f"""
-            <div class="email-card {item['badge']}">
+            <div class="email-card">
                 <div class="email-details">
                     <h4>{item['title']}</h4>
                     <p><b>From:</b> {item['from']}</p>
-                    <p><i>Content: {item['summary']}</i></p>
+                    <p><i>Reason/Content: {item['summary']}</i></p>
                 </div>
                 <div style="text-align: right;">
-                    <span class="ai-badge badge-{item['badge']}">{item['category']}</span><br>
+                    <span class="ai-badge">🤒 Leave Request</span><br>
                     <p style="margin-top:8px; font-size:12px; color:#64748b;">Action: <b>{item['action']}</b></p>
                 </div>
             </div>
