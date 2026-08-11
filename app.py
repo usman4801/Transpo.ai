@@ -116,13 +116,13 @@ st.markdown(
 )
 
 # ==========================================
-# OUTLOOK SMART LEAVE AUTO-REPLY LOGIC
+# GMAIL SMART LEAVE AUTO-REPLY LOGIC
 # ==========================================
-def fetch_and_reply_leave_outlook(email_user, email_pass, target_inbox):
+def fetch_and_reply_leave_gmail(email_user, email_pass, target_inbox):
     processed_logs = []
     try:
-        # 1. Connect to Outlook IMAP server
-        mail = imaplib.IMAP4_SSL("outlook.office365.com", 993)
+        # 1. Connect to Gmail IMAP server
+        mail = imaplib.IMAP4_SSL("imap.gmail.com", 993)
         mail.login(email_user, email_pass)
         mail.select("inbox")
 
@@ -165,16 +165,16 @@ def fetch_and_reply_leave_outlook(email_user, email_pass, target_inbox):
 
                     if any(word in body_lower for word in sick_keywords):
                         category = "Sick Leave"
-                        reply_text = f"Dear Employee,\n\nYour sick leave request for today has been received and noted by HR. Rest well and take care of your health.\n\nBest Regards,\nHR Team - Amazon ({target_inbox})"
+                        reply_text = f"Dear Employee,\n\nYour sick leave request for today has been received and noted by HR. Rest well and take care of your health.\n\nBest Regards,\nHR Team ({target_inbox})"
                     elif any(word in body_lower for word in personal_keywords):
                         category = "Personal / Annual Leave"
-                        reply_text = f"Dear Employee,\n\nYour leave request for today has been received and noted by HR. Thank you for informing us in time.\n\nBest Regards,\nHR Team - Amazon ({target_inbox})"
+                        reply_text = f"Dear Employee,\n\nYour leave request for today has been received and noted by HR. Thank you for informing us in time.\n\nBest Regards,\nHR Team ({target_inbox})"
                     else:
-                        continue # Agar koi leave match na ho toh ignore karein
+                        continue 
 
-                    # 3. Send Auto-Reply via SMTP
+                    # 3. Send Auto-Reply via Gmail SMTP
                     try:
-                        smtp_server = smtplib.SMTP('smtp.office365.com', 587)
+                        smtp_server = smtplib.SMTP('smtp.gmail.com', 587)
                         smtp_server.starttls()
                         smtp_server.login(email_user, email_pass)
                         
@@ -201,7 +201,7 @@ def fetch_and_reply_leave_outlook(email_user, email_pass, target_inbox):
         mail.logout()
         return processed_logs
     except Exception as e:
-        st.error(f"Connection Error: {e}")
+        st.error(f"Gmail Connection Error: {e}")
         return []
 
 # ==========================================
@@ -209,17 +209,17 @@ def fetch_and_reply_leave_outlook(email_user, email_pass, target_inbox):
 # ==========================================
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/2646/2646141.png", width=60)
-    st.markdown("### ⚙️ Outlook Leave Sync")
-    outlook_email = st.text_input("HR Inbox Email", value="auh1-fc-pxt@amazon.ae", placeholder="auh1-fc-pxt@amazon.ae")
-    outlook_pass = st.text_input("Outlook App Password", type="password", placeholder="Enter app password...")
+    st.markdown("### ⚙️ Gmail Leave Sync")
+    gmail_email = st.text_input("HR Inbox Email", value="erp.usman@gmail.com")
+    gmail_pass = st.text_input("Gmail App Password", type="password", placeholder="Enter 16-digit app password...")
     st.markdown("<hr>", unsafe_allow_html=True)
-    st.markdown("<p style='color:gray; font-size:12px;'>System Status: 🟢 <b>Smart Leave Filters Active</b></p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:gray; font-size:12px;'>System Status: 🟢 <b>Gmail Testing Mode</b></p>", unsafe_allow_html=True)
 
 # ==========================================
 # MAIN DASHBOARD HEADER
 # ==========================================
 st.markdown('<div class="dash-title">Workforce MailSync AI ✨</div>', unsafe_allow_html=True)
-st.markdown('<div class="dash-subtitle">Smart Same-Day Leave & Annual Response System (`auh1-fc-pxt@amazon.ae`)</div>', unsafe_allow_html=True)
+st.markdown('<div class="dash-subtitle">Smart Same-Day Leave & Annual Response System (Gmail Testing)</div>', unsafe_allow_html=True)
 
 # Metrics Row
 col1, col2, col3 = st.columns(3)
@@ -242,13 +242,13 @@ action_col, text_col = st.columns([3, 7])
 
 with action_col:
     st.markdown("### 🤖 Check Today's Leaves")
-    st.write("Click below to scan unread emails sent to **auh1-fc-pxt@amazon.ae** and auto-reply based on leave context (Sick vs Personal/Annual).")
+    st.write("Click below to scan unread emails in your Gmail inbox and auto-reply based on leave context (Sick vs Personal/Annual).")
     if st.button("Fetch & Smart Auto-Reply ➔"):
-        if not outlook_pass:
-            st.warning("Please enter your Outlook App Password in the sidebar first!")
+        if not gmail_pass:
+            st.warning("Please enter your Gmail App Password in the sidebar first!")
         else:
             with st.spinner("Scanning and analyzing leave reasons..."):
-                results = fetch_and_reply_leave_outlook(outlook_email, outlook_pass, outlook_email)
+                results = fetch_and_reply_leave_gmail(gmail_email, gmail_pass, gmail_email)
                 st.session_state.leave_results = results
             st.success(f"Done! Processed {len(results)} leave requests.")
 
