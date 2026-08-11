@@ -18,7 +18,7 @@ st.set_page_config(
 )
 
 # ==========================================
-# CUSTOM ULTRA-PREMIUM HASEEN CSS (NEW DESIGN)
+# CUSTOM ULTRA-PREMIUM CYBERPUNK CSS (NEW SHAPES)
 # ==========================================
 st.markdown(
     """
@@ -29,7 +29,7 @@ st.markdown(
     
     /* Luxury Dark-Purple Gradient Background Theme */
     .stApp {
-        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+        background: linear-gradient(135deg, #090d16 0%, #171033 50%, #260c38 100%);
         font-family: 'Inter', 'Segoe UI', sans-serif;
         color: #f8fafc;
     }
@@ -43,7 +43,7 @@ st.markdown(
     .dash-title {
         font-size: 42px;
         font-weight: 900;
-        background: linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #38bdf8 100%);
+        background: linear-gradient(135deg, #c084fc 0%, #f472b6 50%, #38bdf8 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         margin-bottom: 0px;
@@ -56,25 +56,29 @@ st.markdown(
         margin-bottom: 35px;
     }
 
-    /* Glassmorphism Metric Cards */
-    .glass-metric-card {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        padding: 24px;
-        border-radius: 20px;
+    /* UNIQUE CYBER-PILL / SHAPED METRIC CARDS */
+    .cyber-metric-card {
+        background: linear-gradient(145deg, rgba(30, 27, 75, 0.6), rgba(15, 23, 42, 0.8));
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        /* Unique Rounded Diagonal Cut & Neon Border */
+        border: 2px solid transparent;
+        border-image: linear-gradient(135deg, #a855f7, #ec4899, #38bdf8) 1;
+        border-radius: 35px 10px 35px 10px; 
+        padding: 28px 20px;
         text-align: center;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 15px 35px rgba(168, 85, 247, 0.15);
         transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        overflow: hidden;
     }
-    .glass-metric-card:hover {
-        transform: translateY(-6px);
-        border-color: rgba(168, 85, 247, 0.4);
-        box-shadow: 0 25px 50px rgba(168, 85, 247, 0.15);
+    .cyber-metric-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 20px 45px rgba(236, 72, 153, 0.3);
+        border-image: linear-gradient(135deg, #38bdf8, #a855f7, #ec4899) 1;
     }
-    .metric-value { font-size: 38px; font-weight: 900; color: #f1f5f9; }
-    .metric-label { font-size: 13px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 5px; }
+    .metric-value { font-size: 40px; font-weight: 900; color: #ffffff; text-shadow: 0 0 15px rgba(168, 85, 247, 0.5); }
+    .metric-label { font-size: 12px; color: #cbd5e1; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-top: 8px; }
 
     /* Neon Gradient Buttons */
     .stButton>button {
@@ -261,14 +265,14 @@ with st.sidebar:
 st.markdown('<div class="dash-title">Workforce MailSync AI ✨</div>', unsafe_allow_html=True)
 st.markdown('<div class="dash-subtitle">Next-Gen Intelligent Same-Day Leave & Annual Response System</div>', unsafe_allow_html=True)
 
-# Glassmorphism Metrics Row
+# Cyber-Shaped Cards Row
 col1, col2, col3 = st.columns(3)
 with col1:
-    st.markdown('<div class="glass-metric-card"><div class="metric-value">--</div><div class="metric-label">Today Scanned</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="cyber-metric-card"><div class="metric-value">--</div><div class="metric-label">Today Scanned</div></div>', unsafe_allow_html=True)
 with col2:
-    st.markdown('<div class="glass-metric-card"><div class="metric-value" style="color:#38bdf8;">--</div><div class="metric-label">Replies Dispatched</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="cyber-metric-card"><div class="metric-value" style="color:#38bdf8;">--</div><div class="metric-label">Replies Dispatched</div></div>', unsafe_allow_html=True)
 with col3:
-    st.markdown('<div class="glass-metric-card"><div class="metric-value" style="color:#c084fc;">100%</div><div class="metric-label">Context Match</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="cyber-metric-card"><div class="metric-value" style="color:#c084fc;">100%</div><div class="metric-label">Context Match</div></div>', unsafe_allow_html=True)
 
 st.markdown("<br><br>", unsafe_allow_html=True)
 
