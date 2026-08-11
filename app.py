@@ -116,7 +116,7 @@ st.markdown(
 )
 
 # ==========================================
-# OUTLOOK LEAVE AUTO-REPLY LOGIC
+# OUTLOOK SMART LEAVE AUTO-REPLY LOGIC
 # ==========================================
 def fetch_and_reply_leave_outlook(email_user, email_pass, target_inbox):
     processed_logs = []
@@ -156,16 +156,21 @@ def fetch_and_reply_leave_outlook(email_user, email_pass, target_inbox):
 
                     body_lower = body.lower()
 
-                    # 2. Strict Leave Keyword Filtering (Sirf Chutti/Leave wali emails)
-                    leave_keywords = ["sick", "chutti", "leave", "fever", "emergency", "absent", "cant come", "can't come", "not coming", "ill"]
-                    
-                    if any(word in body_lower for word in leave_keywords):
-                        category = "Leave Request"
-                        
-                        # Personalized Auto-Reply text for leave
-                        reply_text = f"Dear Employee,\n\nYour leave request for today has been received and noted by HR. Rest well and take care of your health.\n\nBest Regards,\nHR Team - Amazon ({target_inbox})"
+                    # 2. Categorized Keywords (Sick vs Personal/Annual Leave)
+                    sick_keywords = ["sick", "fever", "ill", "unwell", "doctor", "hospital", "medical"]
+                    personal_keywords = ["personal reason", "family issue", "emergency", "urgent work", "cant come", "can't come", "not coming", "chutti", "leave", "absent"]
+
+                    category = ""
+                    reply_text = ""
+
+                    if any(word in body_lower for word in sick_keywords):
+                        category = "Sick Leave"
+                        reply_text = f"Dear Employee,\n\nYour sick leave request for today has been received and noted by HR. Rest well and take care of your health.\n\nBest Regards,\nHR Team - Amazon ({target_inbox})"
+                    elif any(word in body_lower for word in personal_keywords):
+                        category = "Personal / Annual Leave"
+                        reply_text = f"Dear Employee,\n\nYour leave request for today has been received and noted by HR. Thank you for informing us in time.\n\nBest Regards,\nHR Team - Amazon ({target_inbox})"
                     else:
-                        continue # Agar email chutti ki nahi hai toh ignore kar do
+                        continue # Agar koi leave match na ho toh ignore karein
 
                     # 3. Send Auto-Reply via SMTP
                     try:
@@ -208,22 +213,22 @@ with st.sidebar:
     outlook_email = st.text_input("HR Inbox Email", value="auh1-fc-pxt@amazon.ae", placeholder="auh1-fc-pxt@amazon.ae")
     outlook_pass = st.text_input("Outlook App Password", type="password", placeholder="Enter app password...")
     st.markdown("<hr>", unsafe_allow_html=True)
-    st.markdown("<p style='color:gray; font-size:12px;'>System Status: 🟢 <b>Ready for Leave Tracking</b></p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:gray; font-size:12px;'>System Status: 🟢 <b>Smart Leave Filters Active</b></p>", unsafe_allow_html=True)
 
 # ==========================================
 # MAIN DASHBOARD HEADER
 # ==========================================
 st.markdown('<div class="dash-title">Workforce MailSync AI ✨</div>', unsafe_allow_html=True)
-st.markdown('<div class="dash-subtitle">Automated Leave Response System for Amazon HR (`auh1-fc-pxt@amazon.ae`)</div>', unsafe_allow_html=True)
+st.markdown('<div class="dash-subtitle">Smart Same-Day Leave & Annual Response System (`auh1-fc-pxt@amazon.ae`)</div>', unsafe_allow_html=True)
 
 # Metrics Row
 col1, col2, col3 = st.columns(3)
 with col1:
     st.markdown('<div class="ai-metric-card"><div class="metric-value">--</div><div class="metric-label">Today Scanned</div></div>', unsafe_allow_html=True)
 with col2:
-    st.markdown('<div class="ai-metric-card"><div class="metric-value" style="color:#10b981;">--</div><div class="metric-label">Leave Replies Sent</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="ai-metric-card"><div class="metric-value" style="color:#10b981;">--</div><div class="metric-label">Targeted Replies Sent</div></div>', unsafe_allow_html=True)
 with col3:
-    st.markdown('<div class="ai-metric-card"><div class="metric-value" style="color:#4f46e5;">100%</div><div class="metric-label">Targeted Focus</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="ai-metric-card"><div class="metric-value" style="color:#4f46e5;">100%</div><div class="metric-label">Context Match</div></div>', unsafe_allow_html=True)
 
 st.markdown("<br><br>", unsafe_allow_html=True)
 
@@ -237,15 +242,15 @@ action_col, text_col = st.columns([3, 7])
 
 with action_col:
     st.markdown("### 🤖 Check Today's Leaves")
-    st.write("Click below to scan unread emails sent to **auh1-fc-pxt@amazon.ae** and auto-reply only to leave requests.")
-    if st.button("Fetch & Auto-Reply Leaves ➔"):
+    st.write("Click below to scan unread emails sent to **auh1-fc-pxt@amazon.ae** and auto-reply based on leave context (Sick vs Personal/Annual).")
+    if st.button("Fetch & Smart Auto-Reply ➔"):
         if not outlook_pass:
             st.warning("Please enter your Outlook App Password in the sidebar first!")
         else:
-            with st.spinner("Scanning inbox for day-leave requests..."):
+            with st.spinner("Scanning and analyzing leave reasons..."):
                 results = fetch_and_reply_leave_outlook(outlook_email, outlook_pass, outlook_email)
                 st.session_state.leave_results = results
-            st.success(f"Done! Processed {len(results)} employee leave requests.")
+            st.success(f"Done! Processed {len(results)} leave requests.")
 
 with text_col:
     st.markdown("### 📥 Today's Processed Leave Emails")
@@ -264,7 +269,7 @@ with text_col:
                     <p><i>Reason/Content: {item['summary']}</i></p>
                 </div>
                 <div style="text-align: right;">
-                    <span class="ai-badge">🤒 Leave Request</span><br>
+                    <span class="ai-badge">{item['category']}</span><br>
                     <p style="margin-top:8px; font-size:12px; color:#64748b;">Action: <b>{item['action']}</b></p>
                 </div>
             </div>
