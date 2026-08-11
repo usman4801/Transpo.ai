@@ -1,6 +1,12 @@
 import streamlit as st
 import pandas as pd
 import time
+import imaplib
+import email
+from email.header import decode_header
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 # ==========================================
 # PAGE CONFIGURATION
@@ -17,24 +23,20 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    /* Hiding Default Streamlit Elements */
     #MainMenu {visibility: hidden;}
     header {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* Background and Font */
     .stApp {
         background-color: #f3f6fc;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     
-    /* Main Container */
     .block-container {
         padding-top: 2rem !important;
         padding-bottom: 2rem !important;
     }
     
-    /* Modern Dashboard Title */
     .dash-title {
         font-size: 38px;
         font-weight: 800;
@@ -50,7 +52,6 @@ st.markdown(
         margin-bottom: 30px;
     }
 
-    /* Beautiful Metric Cards */
     .ai-metric-card {
         background: white;
         padding: 20px;
@@ -67,7 +68,6 @@ st.markdown(
     .metric-value { font-size: 36px; font-weight: 800; color: #1e293b; }
     .metric-label { font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
-    /* Custom Gradient Button */
     .stButton>button {
         background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
         color: white !important;
@@ -85,7 +85,6 @@ st.markdown(
         transform: scale(1.02);
     }
 
-    /* Email Cards Design */
     .email-card {
         background: white;
         padding: 20px;
@@ -121,22 +120,108 @@ st.markdown(
 )
 
 # ==========================================
+# OUTLOOK AUTO-REPLY LOGIC (IMAP / SMTP)
+# ==========================================
+def fetch_and_reply_outlook(email_user, email_pass, target_inbox):
+    processed_logs = []
+    try:
+        # 1. Connect to Outlook IMAP server
+        mail = imaplib.IMAP4_SSL("outlook.office365.com", 993)
+        mail.login(email_user, email_pass)
+        mail.select("inbox")
+
+        # Search unread messages
+        status, messages = mail.search(None, 'UNSEEN')
+        if status != 'OK':
+            return []
+
+        for num in messages[0].split():
+            res, msg_data = mail.fetch(num, '(RFC822)')
+            for response_part in msg_data:
+                if isinstance(response_part, tuple):
+                    msg = email.message_from_bytes(response_part[1])
+                    
+                    # Get Sender & Subject
+                    subject, encoding = decode_header(msg["Subject"])[0]
+                    if isinstance(subject, bytes):
+                        subject = subject.decode(encoding or "utf-8", errors="ignore")
+                    
+                    from_whom = msg.get("From")
+                    
+                    # Extract Body Text
+                    body = ""
+                    if msg.is_multipart():
+                        for part in msg.walk():
+                            if part.get_content_type() == "text/plain":
+                                body = part.get_payload(decode=True).decode(errors="ignore")
+                                break
+                    else:
+                        body = msg.get_payload(decode=True).decode(errors="ignore")
+
+                    body_lower = body.lower()
+
+                    # 2. Keyword Filtering (Leave / Sick / Mispunch)
+                    if any(word in body_lower for word in ["sick", "chutti", "leave", "fever", "emergency", "absent"]):
+                        category = "Leave Request"
+                        badge_class = "leave"
+                        reply_text = f"Dear Employee,\n\nYour leave request regarding '{subject}' has been received and noted by HR. Rest well and take care.\n\nBest Regards,\nHR Team - Amazon ({target_inbox})"
+                    elif any(word in body_lower for word in ["punch", "mispunch", "missed", "timing"]):
+                        category = "Mispunch"
+                        badge_class = "mispunch"
+                        reply_text = f"Dear Employee,\n\nYour missing punch query has been logged and forwarded to attendance management.\n\nBest Regards,\nHR Team - Amazon ({target_inbox})"
+                    else:
+                        continue # Skip other emails
+
+                    # 3. Send Auto-Reply via SMTP
+                    try:
+                        smtp_server = smtplib.SMTP('smtp.office365.com', 587)
+                        smtp_server.starttls()
+                        smtp_server.login(email_user, email_pass)
+                        
+                        msg_reply = MIMEMultipart()
+                        msg_reply['From'] = email_user
+                        msg_reply['To'] = from_whom
+                        msg_reply['Subject'] = f"Re: {subject}"
+                        msg_reply.attach(MIMEText(reply_text, 'plain'))
+                        
+                        smtp_server.sendmail(email_user, from_whom, msg_reply.as_string())
+                        smtp_server.quit()
+                        status_action = "Auto-Replied ✅"
+                    except Exception as e:
+                        status_action = f"Failed to Reply ❌"
+
+                    processed_logs.append({
+                        "title": subject[:40],
+                        "from": from_whom,
+                        "summary": body[:90] + "...",
+                        "category": category,
+                        "badge": badge_class,
+                        "action": status_action
+                    })
+
+        mail.logout()
+        return processed_logs
+    except Exception as e:
+        st.error(f"Connection Error: {e}")
+        return []
+
+# ==========================================
 # SIDEBAR SETTINGS
 # ==========================================
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/2646/2646141.png", width=60)
-    st.markdown("### ⚙️ AI Engine Settings")
-    st.text_input("Gemini API Key", type="password", placeholder="Paste your API key here...")
-    st.text_input("HR Inbox Email", placeholder="hr@amazon.com")
-    st.selectbox("Auto-Reply Mode", ["Fully Automated (Send Direct)", "Draft Only (Require Approval)", "Off"])
+    st.markdown("### ⚙️ Outlook Integration")
+    outlook_email = st.text_input("HR Inbox Email", value="auh1-fc-pxt@amazon.ae", placeholder="auh1-fc-pxt@amazon.ae")
+    outlook_pass = st.text_input("Outlook App Password", type="password", placeholder="Enter app password...")
+    auto_mode = st.selectbox("Auto-Reply Mode", ["Fully Automated (Send Direct)", "Draft Only (Require Approval)", "Off"])
     st.markdown("<hr>", unsafe_allow_html=True)
-    st.markdown("<p style='color:gray; font-size:12px;'>System Status: 🟢 <b>Online</b></p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:gray; font-size:12px;'>System Status: 🟢 <b>Ready</b></p>", unsafe_allow_html=True)
 
 # ==========================================
 # MAIN DASHBOARD HEADER
 # ==========================================
-st.markdown('<div class="dash-title">Workforce MailSync AI ✨</div>', unsafe_allow_html=True)
-st.markdown('<div class="dash-subtitle">Intelligent Email Parsing & Automated Attendance Actions System</div>', unsafe_allow_html=True)
+st.markdown('<div class="dash-title">Workforce MailSync AI ✨</div>', unsafe_layout=True)
+st.markdown('<div class="dash-subtitle">Intelligent Outlook Email Parsing & Automated HR Actions System</div>', unsafe_layout=True)
 
 # Metrics Row
 col1, col2, col3, col4 = st.columns(4)
@@ -152,69 +237,45 @@ with col4:
 st.markdown("<br><br>", unsafe_allow_html=True)
 
 # ==========================================
-# AI SCANNER SECTION (DEMO)
+# LIVE SCANNER SECTION
 # ==========================================
-if 'scanned' not in st.session_state:
-    st.session_state.scanned = False
+if 'live_results' not in st.session_state:
+    st.session_state.live_results = None
 
 action_col, text_col = st.columns([3, 7])
 
 with action_col:
-    st.markdown("### 🤖 Inbox Sync")
-    st.write("Click below to fetch and analyze unread HR emails using AI.")
-    if st.button("Fetch & Analyze New Emails ➔"):
-        with st.spinner("Connecting to Mail Server..."):
-            time.sleep(1)
-        with st.spinner("Gemini AI is reading and extracting data..."):
-            time.sleep(2)
-        st.session_state.scanned = True
-        st.success("Analysis Complete! 3 new requests processed.")
+    st.markdown("### 🤖 Outlook Sync")
+    st.write("Click below to fetch unread emails from **auh1-fc-pxt@amazon.ae** and execute auto-replies.")
+    if st.button("Fetch & Process Live Emails ➔"):
+        if not outlook_pass:
+            st.warning("Please enter your Outlook App Password in the sidebar first!")
+        else:
+            with st.spinner("Connecting to Outlook Mail Server..."):
+                results = fetch_and_reply_outlook(outlook_email, outlook_pass, outlook_email)
+                st.session_state.live_results = results
+            st.success(f"Sync Complete! {len(results)} leave/mispunch requests processed.")
 
 with text_col:
-    st.markdown("### 📥 Recent Processed Emails")
+    st.markdown("### 📥 Filtered & Replied Emails")
     
-    if not st.session_state.scanned:
-        st.info("No new emails processed today. Click 'Fetch & Analyze' to run the AI engine.")
+    if st.session_state.live_results is None:
+        st.info("Click 'Fetch & Process Live Emails' to scan incoming mail from Amazon associates.")
+    elif len(st.session_state.live_results) == 0:
+        st.warning("No new matching leave requests or mispunches found in the inbox.")
     else:
-        # Mocking the AI output into beautiful HTML cards
-        html_cards = """
-        <!-- Card 1: Mispunch -->
-        <div class="email-card mispunch">
-            <div class="email-details">
-                <h4>Missing Punch on Monday</h4>
-                <p><b>From:</b> usman.associate@amazon.com &nbsp; | &nbsp; <b>Extracted ID:</b> 206348020</p>
-                <p><i>AI Summary: Employee forgot to punch out due to system error.</i></p>
+        for item in st.session_state.live_results:
+            card_html = f"""
+            <div class="email-card {item['badge']}">
+                <div class="email-details">
+                    <h4>{item['title']}</h4>
+                    <p><b>From:</b> {item['from']}</p>
+                    <p><i>Content: {item['summary']}</i></p>
+                </div>
+                <div style="text-align: right;">
+                    <span class="ai-badge badge-{item['badge']}">{item['category']}</span><br>
+                    <p style="margin-top:8px; font-size:12px; color:#64748b;">Action: <b>{item['action']}</b></p>
+                </div>
             </div>
-            <div style="text-align: right;">
-                <span class="ai-badge badge-mispunch">⚠️ Mispunch</span><br>
-                <p style="margin-top:8px; font-size:12px; color:#64748b;">Action: <b>Auto-Replied ✅</b></p>
-            </div>
-        </div>
-
-        <!-- Card 2: Sick Leave -->
-        <div class="email-card leave">
-            <div class="email-details">
-                <h4>Sick Leave Request - 11th Aug</h4>
-                <p><b>From:</b> ahmed.ali@amazon.com &nbsp; | &nbsp; <b>Extracted ID:</b> 206136723</p>
-                <p><i>AI Summary: Employee is requesting sick leave for one day due to fever.</i></p>
-            </div>
-            <div style="text-align: right;">
-                <span class="ai-badge badge-leave">🤒 Sick Leave</span><br>
-                <p style="margin-top:8px; font-size:12px; color:#64748b;">Action: <b>Updated Roster ✅</b></p>
-            </div>
-        </div>
-
-        <!-- Card 3: Shift Change -->
-        <div class="email-card shift">
-            <div class="email-details">
-                <h4>Request for 7-Hour Shift Switch</h4>
-                <p><b>From:</b> sara.khan@amazon.com &nbsp; | &nbsp; <b>Extracted ID:</b> 205854274</p>
-                <p><i>AI Summary: Employee requesting to change configuration to 7-hours.</i></p>
-            </div>
-            <div style="text-align: right;">
-                <span class="ai-badge badge-shift">🔄 Shift Change</span><br>
-                <p style="margin-top:8px; font-size:12px; color:#64748b;">Action: <b>Pending Manager Approval ⏳</b></p>
-            </div>
-        </div>
-        """
-        st.markdown(html_cards, unsafe_allow_html=True)
+            """
+            st.markdown(card_html, unsafe_allow_html=True)
