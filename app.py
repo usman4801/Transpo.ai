@@ -152,7 +152,7 @@ def fetch_and_reply_leave_gmail(email_user, email_pass, target_inbox):
                                 body = part.get_payload(decode=True).decode(errors="ignore")
                                 break
                     else:
-                        body = msg.get_payload(decode=True).decode(errors="ignore")
+                        body = part.get_payload(decode=True).decode(errors="ignore")
 
                     body_lower = body.lower()
 
@@ -201,19 +201,42 @@ def fetch_and_reply_leave_gmail(email_user, email_pass, target_inbox):
         mail.logout()
         return processed_logs
     except Exception as e:
-        st.error(f"Gmail Connection Error: {e}")
-        return []
+        raise e
 
 # ==========================================
-# SIDEBAR SETTINGS
+# SIDEBAR SETTINGS & SIGN-IN
 # ==========================================
+if 'is_connected' not in st.session_state:
+    st.session_state.is_connected = False
+
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/2646/2646141.png", width=60)
     st.markdown("### ⚙️ Gmail Leave Sync")
     gmail_email = st.text_input("HR Inbox Email", value="erp.usman@gmail.com")
     gmail_pass = st.text_input("Gmail App Password", type="password", placeholder="Enter 16-digit app password...")
+    
+    # Sign In Button
+    if st.button("Sign In ➔"):
+        if not gmail_pass:
+            st.warning("Please enter your App Password!")
+        else:
+            try:
+                # Test connection immediately
+                test_mail = imaplib.IMAP4_SSL("imap.gmail.com", 993)
+                test_mail.login(gmail_email, gmail_pass)
+                test_mail.logout()
+                st.session_state.is_connected = True
+                st.success("Signed In Successfully!")
+            except Exception as e:
+                st.session_state.is_connected = False
+                st.error(f"Authentication Failed! Please use Google 'App Password', not normal password.")
+
     st.markdown("<hr>", unsafe_allow_html=True)
-    st.markdown("<p style='color:gray; font-size:12px;'>System Status: 🟢 <b>Gmail Testing Mode</b></p>", unsafe_allow_html=True)
+    
+    if st.session_state.is_connected:
+        st.markdown("<p style='color:green; font-size:13px;'>System Status: 🟢 <b>Connected</b></p>", unsafe_allow_html=True)
+    else:
+        st.markdown("<p style='color:gray; font-size:12px;'>System Status: 🔴 <b>Not Connected</b></p>", unsafe_allow_html=True)
 
 # ==========================================
 # MAIN DASHBOARD HEADER
@@ -244,13 +267,16 @@ with action_col:
     st.markdown("### 🤖 Check Today's Leaves")
     st.write("Click below to scan unread emails in your Gmail inbox and auto-reply based on leave context (Sick vs Personal/Annual).")
     if st.button("Fetch & Smart Auto-Reply ➔"):
-        if not gmail_pass:
-            st.warning("Please enter your Gmail App Password in the sidebar first!")
+        if not st.session_state.is_connected:
+            st.warning("Please sign in successfully using your App Password from the sidebar first!")
         else:
-            with st.spinner("Scanning and analyzing leave reasons..."):
-                results = fetch_and_reply_leave_gmail(gmail_email, gmail_pass, gmail_email)
-                st.session_state.leave_results = results
-            st.success(f"Done! Processed {len(results)} leave requests.")
+            try:
+                with st.spinner("Scanning and analyzing leave reasons..."):
+                    results = fetch_and_reply_leave_gmail(gmail_email, gmail_pass, gmail_email)
+                    st.session_state.leave_results = results
+                st.success(f"Done! Processed {len(results)} leave requests.")
+            except Exception as ex:
+                st.error(f"Error during fetch: {ex}")
 
 with text_col:
     st.markdown("### 📥 Today's Processed Leave Emails")
