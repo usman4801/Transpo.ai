@@ -188,7 +188,7 @@ def fetch_and_reply_outlook(email_user, email_pass, target_inbox):
                         smtp_server.quit()
                         status_action = "Auto-Replied ✅"
                     except Exception as e:
-                        status_action = f"Failed to Reply ❌"
+                        status_action = "Failed to Reply ❌"
 
                     processed_logs.append({
                         "title": subject[:40],
@@ -220,8 +220,8 @@ with st.sidebar:
 # ==========================================
 # MAIN DASHBOARD HEADER
 # ==========================================
-st.markdown('<div class="dash-title">Workforce MailSync AI ✨</div>', unsafe_layout=True)
-st.markdown('<div class="dash-subtitle">Intelligent Outlook Email Parsing & Automated HR Actions System</div>', unsafe_layout=True)
+st.markdown('<div class="dash-title">Workforce MailSync AI ✨</div>', unsafe_allow_html=True)
+st.markdown('<div class="dash-subtitle">Intelligent Outlook Email Parsing & Automated HR Actions System</div>', unsafe_allow_html=True)
 
 # Metrics Row
 col1, col2, col3, col4 = st.columns(4)
