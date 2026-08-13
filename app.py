@@ -18,7 +18,7 @@ st.set_page_config(
 )
 
 # ==========================================
-# FRESH ULTIMATE THEME (Purple + White + Orange)
+# CUSTOM THEME (Orange Sidebar + White Hero Box)
 # ==========================================
 st.markdown(
     """
@@ -38,14 +38,13 @@ st.markdown(
         padding-bottom: 3rem !important;
     }
     
-    /* Hero Header Section */
+    /* Hero Header Section - Clean White Background */
     .hero-box {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 140, 0, 0.25);
+        background: #ffffff;
+        border: 1px solid rgba(255, 140, 0, 0.4);
         border-radius: 24px;
         padding: 35px 40px;
-        backdrop-filter: blur(20px);
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
         margin-bottom: 30px;
         display: flex;
         justify-content: space-between;
@@ -55,20 +54,20 @@ st.markdown(
     .hero-title {
         font-size: 38px;
         font-weight: 900;
-        color: #ffffff;
+        color: #0f0728;
         letter-spacing: -1px;
         margin: 0;
     }
     .hero-title span {
-        background: linear-gradient(135deg, #ff922b 0%, #ff6b6b 100%);
+        background: linear-gradient(135deg, #ff922b 0%, #e8590c 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
     .hero-subtitle {
-        color: #e2e8f0;
+        color: #475569;
         font-size: 14px;
         margin-top: 8px;
-        font-weight: 400;
+        font-weight: 500;
     }
 
     /* Modern Metric Cards */
@@ -128,10 +127,14 @@ st.markdown(
         display: inline-block;
     }
 
-    /* Sidebar Styling */
+    /* Sidebar Styling - Orange Shaded Gradient */
     [data-testid="stSidebar"] {
-        background: #090319;
-        border-right: 1px solid rgba(255, 255, 255, 0.06);
+        background: linear-gradient(180deg, #431407 0%, #7c2d12 50%, #9a3412 100%);
+        border-right: 1px solid rgba(255, 140, 0, 0.2);
+    }
+    [data-testid="stSidebar"] .stTextInput label {
+        color: #ffedd5 !important;
+        font-weight: 600;
     }
     </style>
     """,
@@ -261,11 +264,11 @@ with st.sidebar:
                 st.session_state.is_connected = False
                 st.error("Invalid Credentials!")
 
-    st.markdown("<hr style='border-color: rgba(255,255,255,0.08);'>", unsafe_allow_html=True)
+    st.markdown("<hr style='border-color: rgba(255,255,255,0.2);'>", unsafe_allow_html=True)
     if st.session_state.is_connected:
-        st.markdown("<p style='color:#4ade80; font-size:13px; font-weight:600;'>Status: 🟢 Live & Synced</p>", unsafe_allow_html=True)
+        st.markdown("<p style='color:#bbf7d0; font-size:13px; font-weight:700;'>Status: 🟢 Live & Synced</p>", unsafe_allow_html=True)
     else:
-        st.markdown("<p style='color:#f87171; font-size:13px; font-weight:600;'>Status: 🔴 Disconnected</p>", unsafe_allow_html=True)
+        st.markdown("<p style='color:#fecaca; font-size:13px; font-weight:700;'>Status: 🔴 Disconnected</p>", unsafe_allow_html=True)
 
 # ==========================================
 # MAIN LAYOUT
@@ -286,7 +289,7 @@ with col_m1:
 with col_m2:
     st.markdown('<div class="stat-card"><div class="stat-num" style="color:#ff922b;">--</div><div class="stat-lbl">Dispatched Replies</div></div>', unsafe_allow_html=True)
 with col_m3:
-    st.markdown('<div class="stat-card"><div class="stat-num" style="color:#e2e8f0;">100%</div><div class="stat-lbl">AI Context Match</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="stat-card"><div class="stat-num" style="color:#cbd5e1;">100%</div><div class="stat-lbl">AI Context Match</div></div>', unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
