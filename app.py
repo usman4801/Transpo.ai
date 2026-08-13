@@ -158,6 +158,10 @@ st.markdown(
         color: #ffedd5 !important;
         font-weight: 600;
     }
+    [data-testid="stSidebar"] .stCheckbox label {
+        color: #ffedd5 !important;
+        font-weight: 600;
+    }
     </style>
     """,
     unsafe_allow_html=True
@@ -169,11 +173,15 @@ st.markdown(
 if 'is_connected' not in st.session_state:
     st.session_state.is_connected = True
 if 'saved_email' not in st.session_state:
-    st.session_state.saved_email = "yarayaseen@gmail.com"
+    st.session_state.saved_email = "erp.usmanmkj@gmail.com"
 if 'saved_pass' not in st.session_state:
     st.session_state.saved_pass = ""
 if 'sent_history' not in st.session_state:
     st.session_state.sent_history = []
+if 'today_scanned_count' not in st.session_state:
+    st.session_state.today_scanned_count = 0
+if 'lock_credentials' not in st.session_state:
+    st.session_state.lock_credentials = True  # Default locked / read-only
 
 # ==========================================
 # HELPER: EXTRACT SENDER NAME
@@ -282,6 +290,7 @@ def fetch_leave_mails_only(email_user, email_pass):
                     })
 
         mail.logout()
+        st.session_state.today_scanned_count = len(fetched_logs)
         return fetched_logs
     except Exception as e:
         raise e
@@ -326,22 +335,27 @@ def dispatch_replies_gmail(email_user, email_pass, items):
     return success_count
 
 # ==========================================
-# SIDEBAR SETUP
+# SIDEBAR SETUP (WITH LOCK/UNLOCK FEATURE)
 # ==========================================
 with st.sidebar:
     st.markdown("<h3 style='color:#ffffff; font-weight:800; margin-bottom:20px;'>⚙️ Gmail Gateway</h3>", unsafe_allow_html=True)
     
-    input_email = st.text_input("Email", value=st.session_state.saved_email)
-    input_pass = st.text_input("Password", value=st.session_state.saved_pass, type="password", placeholder="Enter 16-digit password...")
+    # Checkbox to lock/unlock inputs
+    lock_state = st.checkbox("Lock Credentials (Read-Only)", value=st.session_state.lock_credentials)
+    st.session_state.lock_credentials = lock_state
     
-    if st.button("Update / Save Credentials ➔"):
-        if not input_pass:
-            st.warning("Please enter your Password!")
-        else:
-            st.session_state.saved_email = input_email
-            st.session_state.saved_pass = input_pass
-            st.session_state.is_connected = True
-            st.success("Credentials Locked & Saved Permanently!")
+    input_email = st.text_input("Email", value=st.session_state.saved_email, disabled=lock_state)
+    input_pass = st.text_input("Password", value=st.session_state.saved_pass, type="password", placeholder="Enter 16-digit password...", disabled=lock_state)
+    
+    if not lock_state:
+        if st.button("Update / Save Credentials ➔"):
+            if not input_pass:
+                st.warning("Please enter your Password!")
+            else:
+                st.session_state.saved_email = input_email
+                st.session_state.saved_pass = input_pass
+                st.session_state.is_connected = True
+                st.success("Credentials Updated!")
 
     st.markdown("<hr style='border-color: rgba(255,255,255,0.2);'>", unsafe_allow_html=True)
     st.markdown("<p style='color:#bbf7d0; font-size:13px; font-weight:700;'>Status: 🟢 Always Connected</p>", unsafe_allow_html=True)
@@ -358,11 +372,14 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# Metrics Grid (Crystal Cards)
+# Metrics Grid (Crystal Cards) with Live Date & Counters
+current_date_day = datetime.datetime.now().strftime("%d %b %Y (%A)")
+total_scanned = st.session_state.today_scanned_count
 total_dispatched = len(st.session_state.sent_history)
+
 col_m1, col_m2, col_m3 = st.columns(3)
 with col_m1:
-    st.markdown('<div class="stat-card"><div class="stat-num">--</div><div class="stat-lbl">Today Scanned</div></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="stat-card"><div class="stat-num">{total_scanned}</div><div class="stat-lbl">Today Scanned</div><div style="font-size:10px; color:#ff922b; margin-top:4px; font-weight:600;">{current_date_day}</div></div>', unsafe_allow_html=True)
 with col_m2:
     st.markdown(f'<div class="stat-card"><div class="stat-num" style="color:#ff922b;">{total_dispatched}</div><div class="stat-lbl">Dispatched Replies</div></div>', unsafe_allow_html=True)
 with col_m3:
@@ -381,35 +398,41 @@ with control_col:
     st.write("Trigger inbox scanning to process incoming leave requests with AI parsing.")
     
     if st.button("Run Smart Sync ➔"):
-        if not st.session_state.saved_pass:
+        active_pass = st.session_state.saved_pass if st.session_state.lock_credentials else input_pass
+        active_email = st.session_state.saved_email if st.session_state.lock_credentials else input_email
+        
+        if not active_pass:
             st.warning("Please configure your Password in the sidebar first!")
         else:
             try:
                 with st.spinner("Scanning unread inbox messages..."):
-                    results = fetch_leave_mails_only(st.session_state.saved_email, st.session_state.saved_pass)
+                    results = fetch_leave_mails_only(active_email, active_pass)
                     st.session_state.leave_results = results
                 st.success(f"Successfully synced {len(results)} items!")
+                st.rerun()
             except Exception as ex:
                 st.error(f"Error: {ex}")
 
     st.markdown("<br>", unsafe_allow_html=True)
     
     if st.button("Reply Mail ➔"):
-        if not st.session_state.saved_pass:
+        active_pass = st.session_state.saved_pass if st.session_state.lock_credentials else input_pass
+        active_email = st.session_state.saved_email if st.session_state.lock_credentials else input_email
+        
+        if not active_pass:
             st.warning("Please configure your Password in the sidebar first!")
         elif not st.session_state.leave_results:
             st.warning("No synced emails available to reply. Run Smart Sync first!")
         else:
             try:
                 with st.spinner("Dispatching responses securely..."):
-                    count = dispatch_replies_gmail(st.session_state.saved_email, st.session_state.saved_pass, st.session_state.leave_results)
+                    count = dispatch_replies_gmail(active_email, active_pass, st.session_state.leave_results)
                 st.success(f"Successfully dispatched {count} replies!")
                 st.rerun()
             except Exception as ex:
                 st.error(f"Error: {ex}")
 
 with feed_col:
-    # Toggle Option for Feed vs Sent Box
     tab_choice = st.radio("View Mode", ["📥 Processed Feed", "📤 Sent Box History"], horizontal=True, label_visibility="collapsed")
     
     if tab_choice == "📥 Processed Feed":
@@ -427,6 +450,7 @@ with feed_col:
             st.warning("No new relevant leave requests found.")
         else:
             for item in st.session_state.leave_results:
+                badge_color = "#4ade80" if item['action'] == "Auto-Replied ✅" else "#ff922b"
                 card_html = f"""
                 <div class="mail-item">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
@@ -437,7 +461,7 @@ with feed_col:
                         </div>
                         <div style="text-align:right; min-width:110px;">
                             <span class="badge-tag">{item['category']}</span><br>
-                            <span style="font-size:11px; color:#ff922b; font-weight:700; display:inline-block; margin-top:6px;">{item['action']}</span>
+                            <span style="font-size:11px; color:{badge_color}; font-weight:700; display:inline-block; margin-top:6px;">{item['action']}</span>
                         </div>
                     </div>
                 </div>
@@ -457,7 +481,6 @@ with feed_col:
             st.info("No dispatched replies found in the sent history yet.")
         else:
             for sent_item in reversed(st.session_state.sent_history):
-                # Clean formatting for message body preview inside expander or card
                 formatted_body = sent_item['body'].replace('\n', '<br>')
                 sent_card_html = f"""
                 <div class="mail-item" style="border-left-color: #4ade80;">
