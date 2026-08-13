@@ -7,6 +7,7 @@ from email.header import decode_header
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import datetime
 import re
 
 # ==========================================
@@ -171,6 +172,8 @@ if 'saved_email' not in st.session_state:
     st.session_state.saved_email = "yarayaseen@gmail.com"
 if 'saved_pass' not in st.session_state:
     st.session_state.saved_pass = ""
+if 'sent_history' not in st.session_state:
+    st.session_state.sent_history = []
 
 # ==========================================
 # HELPER: EXTRACT SENDER NAME
@@ -255,8 +258,7 @@ def fetch_leave_mails_only(email_user, email_pass):
                             "Your sick leave request has been received and noted. Rest well. "
                             "Kindly bring the medical certificate once you resume work.\n\n"
                             "Regards,\n"
-                            "Muhammad Usman\n"
-                            "amazon"
+                            "Amazon PXT Team"
                         )
                     elif any(word in body_lower for word in personal_keywords):
                         category = "Personal / Annual Leave"
@@ -264,8 +266,7 @@ def fetch_leave_mails_only(email_user, email_pass):
                             f"{salutation}\n\n"
                             "Your leave request has been received and noted. Thank you for informing us in time.\n\n"
                             "Regards,\n"
-                            "Muhammad Usman\n"
-                            "amazon"
+                            "Amazon PXT Team"
                         )
                     else:
                         continue 
@@ -287,6 +288,8 @@ def fetch_leave_mails_only(email_user, email_pass):
 
 def dispatch_replies_gmail(email_user, email_pass, items):
     success_count = 0
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
     for item in items:
         if item["action"] == "Auto-Replied ✅":
             continue
@@ -307,6 +310,16 @@ def dispatch_replies_gmail(email_user, email_pass, items):
             if item['msg_id']:
                 st.session_state.processed_emails.add(item['msg_id'])
             item['action'] = "Auto-Replied ✅"
+            
+            # Save to sent history box
+            st.session_state.sent_history.append({
+                "to": item['from'],
+                "subject": item['title'],
+                "category": item['category'],
+                "body": item['reply_text'],
+                "time": current_time
+            })
+            
             success_count += 1
         except Exception:
             item['action'] = "Failed to Reply ❌"
@@ -346,11 +359,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Metrics Grid (Crystal Cards)
+total_dispatched = len(st.session_state.sent_history)
 col_m1, col_m2, col_m3 = st.columns(3)
 with col_m1:
     st.markdown('<div class="stat-card"><div class="stat-num">--</div><div class="stat-lbl">Today Scanned</div></div>', unsafe_allow_html=True)
 with col_m2:
-    st.markdown('<div class="stat-card"><div class="stat-num" style="color:#ff922b;">--</div><div class="stat-lbl">Dispatched Replies</div></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="stat-card"><div class="stat-num" style="color:#ff922b;">{total_dispatched}</div><div class="stat-lbl">Dispatched Replies</div></div>', unsafe_allow_html=True)
 with col_m3:
     st.markdown('<div class="stat-card"><div class="stat-num" style="color:#cbd5e1;">100%</div><div class="stat-lbl">AI Context Match</div></div>', unsafe_allow_html=True)
 
@@ -395,33 +409,73 @@ with control_col:
                 st.error(f"Error: {ex}")
 
 with feed_col:
-    feed_head_col1, feed_head_col2 = st.columns([7, 3])
-    with feed_head_col1:
-        st.markdown("<h3 style='color:#ffffff; font-weight:700; margin-top:0;'>📥 Processed Feed</h3>", unsafe_allow_html=True)
-    with feed_head_col2:
-        if st.button("Clear Feed 🗑️", key="clear_feed_btn"):
-            st.session_state.leave_results = None
-            st.rerun()
+    # Toggle Option for Feed vs Sent Box
+    tab_choice = st.radio("View Mode", ["📥 Processed Feed", "📤 Sent Box History"], horizontal=True, label_visibility="collapsed")
     
-    if st.session_state.leave_results is None:
-        st.info("System on standby. Run Smart Sync to load inbox requests.")
-    elif len(st.session_state.leave_results) == 0:
-        st.warning("No new relevant leave requests found.")
-    else:
-        for item in st.session_state.leave_results:
-            card_html = f"""
-            <div class="mail-item">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                    <div>
-                        <h4>{item['title']}</h4>
-                        <p><b>From:</b> {item['from']}</p>
-                        <p style="color:#cbd5e1; margin-top:6px;"><i>{item['summary']}</i></p>
-                    </div>
-                    <div style="text-align:right; min-width:110px;">
-                        <span class="badge-tag">{item['category']}</span><br>
-                        <span style="font-size:11px; color:#ff922b; font-weight:700; display:inline-block; margin-top:6px;">{item['action']}</span>
+    if tab_choice == "📥 Processed Feed":
+        feed_head_col1, feed_head_col2 = st.columns([7, 3])
+        with feed_head_col1:
+            st.markdown("<h3 style='color:#ffffff; font-weight:700; margin-top:0;'>📥 Processed Feed</h3>", unsafe_allow_html=True)
+        with feed_head_col2:
+            if st.button("Clear Feed 🗑️", key="clear_feed_btn"):
+                st.session_state.leave_results = None
+                st.rerun()
+        
+        if st.session_state.leave_results is None:
+            st.info("System on standby. Run Smart Sync to load inbox requests.")
+        elif len(st.session_state.leave_results) == 0:
+            st.warning("No new relevant leave requests found.")
+        else:
+            for item in st.session_state.leave_results:
+                card_html = f"""
+                <div class="mail-item">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div>
+                            <h4>{item['title']}</h4>
+                            <p><b>From:</b> {item['from']}</p>
+                            <p style="color:#cbd5e1; margin-top:6px;"><i>{item['summary']}</i></p>
+                        </div>
+                        <div style="text-align:right; min-width:110px;">
+                            <span class="badge-tag">{item['category']}</span><br>
+                            <span style="font-size:11px; color:#ff922b; font-weight:700; display:inline-block; margin-top:6px;">{item['action']}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-            """
-            st.markdown(card_html, unsafe_allow_html=True)
+                """
+                st.markdown(card_html, unsafe_allow_html=True)
+                
+    else:  # Sent Box View
+        sent_head_col1, sent_head_col2 = st.columns([7, 3])
+        with sent_head_col1:
+            st.markdown("<h3 style='color:#ffffff; font-weight:700; margin-top:0;'>📤 Sent Box History</h3>", unsafe_allow_html=True)
+        with sent_head_col2:
+            if st.button("Clear History 🗑️", key="clear_sent_btn"):
+                st.session_state.sent_history = []
+                st.rerun()
+                
+        if len(st.session_state.sent_history) == 0:
+            st.info("No dispatched replies found in the sent history yet.")
+        else:
+            for sent_item in reversed(st.session_state.sent_history):
+                # Clean formatting for message body preview inside expander or card
+                formatted_body = sent_item['body'].replace('\n', '<br>')
+                sent_card_html = f"""
+                <div class="mail-item" style="border-left-color: #4ade80;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div>
+                            <h4>Re: {sent_item['subject']}</h4>
+                            <p><b>To:</b> {sent_item['to']}</p>
+                            <p style="color:#94a3b8; font-size:11px; margin-top:2px;"><b>Time:</b> {sent_item['time']}</p>
+                            <details style="margin-top: 8px; color: #cbd5e1; font-size: 12px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px;">
+                                <summary style="cursor: pointer; color: #ff922b; font-weight: 600;">View Exact Sent Reply</summary>
+                                <p style="margin-top: 6px; color: #f1f5f9;">{formatted_body}</p>
+                            </details>
+                        </div>
+                        <div style="text-align:right; min-width:110px;">
+                            <span class="badge-tag">{sent_item['category']}</span><br>
+                            <span style="font-size:11px; color:#4ade80; font-weight:700; display:inline-block; margin-top:6px;">Sent ✅</span>
+                        </div>
+                    </div>
+                </div>
+                """
+                st.markdown(sent_card_html, unsafe_allow_html=True)
