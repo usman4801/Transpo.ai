@@ -142,13 +142,13 @@ st.markdown(
 )
 
 # ==========================================
-# GMAIL LOGIC
+# GMAIL LOGIC (Smart Sync & Dispatch Separate)
 # ==========================================
-def fetch_and_reply_leave_gmail(email_user, email_pass, target_inbox):
+def fetch_leave_mails_only(email_user, email_pass):
     if 'processed_emails' not in st.session_state:
         st.session_state.processed_emails = set()
         
-    processed_logs = []
+    fetched_logs = []
     try:
         mail = imaplib.IMAP4_SSL("imap.gmail.com", 993)
         mail.login(email_user, email_pass)
@@ -206,38 +206,47 @@ def fetch_and_reply_leave_gmail(email_user, email_pass, target_inbox):
                     else:
                         continue 
 
-                    try:
-                        smtp_server = smtplib.SMTP('smtp.gmail.com', 587)
-                        smtp_server.starttls()
-                        smtp_server.login(email_user, email_pass)
-                        
-                        msg_reply = MIMEMultipart()
-                        msg_reply['From'] = email_user
-                        msg_reply['To'] = from_whom
-                        msg_reply['Subject'] = f"Re: {subject}"
-                        msg_reply.attach(MIMEText(reply_text, 'plain'))
-                        
-                        smtp_server.sendmail(email_user, from_whom, msg_reply.as_string())
-                        smtp_server.quit()
-                        
-                        if msg_id:
-                            st.session_state.processed_emails.add(msg_id)
-                        status_action = "Auto-Replied ✅"
-                    except Exception:
-                        status_action = "Failed to Reply ❌"
-
-                    processed_logs.append({
+                    fetched_logs.append({
+                        "msg_id": msg_id,
                         "title": subject[:40],
                         "from": from_whom,
                         "summary": body[:90] + "...",
                         "category": category,
-                        "action": status_action
+                        "reply_text": reply_text,
+                        "action": "Pending Reply ⏳"
                     })
 
         mail.logout()
-        return processed_logs
+        return fetched_logs
     except Exception as e:
         raise e
+
+def dispatch_replies_gmail(email_user, email_pass, items):
+    success_count = 0
+    for item in items:
+        if item["action"] == "Auto-Replied ✅":
+            continue
+        try:
+            smtp_server = smtplib.SMTP('smtp.gmail.com', 587)
+            smtp_server.starttls()
+            smtp_server.login(email_user, email_pass)
+            
+            msg_reply = MIMEMultipart()
+            msg_reply['From'] = email_user
+            msg_reply['To'] = item['from']
+            msg_reply['Subject'] = f"Re: {item['title']}"
+            msg_reply.attach(MIMEText(item['reply_text'], 'plain'))
+            
+            smtp_server.sendmail(email_user, item['from'], msg_reply.as_string())
+            smtp_server.quit()
+            
+            if item['msg_id']:
+                st.session_state.processed_emails.add(item['msg_id'])
+            item['action'] = "Auto-Replied ✅"
+            success_count += 1
+        except Exception:
+            item['action'] = "Failed to Reply ❌"
+    return success_count
 
 # ==========================================
 # SIDEBAR SETUP
@@ -247,12 +256,12 @@ if 'is_connected' not in st.session_state:
 
 with st.sidebar:
     st.markdown("<h3 style='color:#ffffff; font-weight:800; margin-bottom:20px;'>⚙️ Gmail Gateway</h3>", unsafe_allow_html=True)
-    gmail_email = st.text_input("HR Inbox Email", value="yarayaseen@gmail.com")
-    gmail_pass = st.text_input("Gmail App Password", type="password", placeholder="Enter 16-digit password...")
+    gmail_email = st.text_input("Email", value="yarayaseen@gmail.com")
+    gmail_pass = st.text_input("Password", type="password", placeholder="Enter 16-digit password...")
     
-    if st.button("Authenticate Hub ➔"):
+    if st.button("Login ➔"):
         if not gmail_pass:
-            st.warning("Please enter your App Password!")
+            st.warning("Please enter your Password!")
         else:
             try:
                 test_mail = imaplib.IMAP4_SSL("imap.gmail.com", 993)
@@ -300,32 +309,49 @@ if 'leave_results' not in st.session_state:
 control_col, feed_col = st.columns([4, 6])
 
 with control_col:
-    # Font size adjusted to 23px so the long email fits perfectly on a single line
     st.markdown("<h3 style='color:#ffffff; font-weight:700; font-size:23px; white-space:nowrap;'>📬 Auh1-fc-pxt@amazon.ae</h3>", unsafe_allow_html=True)
     st.write("Trigger inbox scanning to process incoming leave requests with AI parsing.")
     
-    if st.button("Run Smart Sync & Reply ➔"):
+    if st.button("Run Smart Sync ➔"):
         if not st.session_state.is_connected:
             st.warning("Please sign in from the sidebar first!")
         else:
             try:
-                with st.spinner("Processing unread inbox messages..."):
-                    results = fetch_and_reply_leave_gmail(gmail_email, gmail_pass, gmail_email)
+                with st.spinner("Scanning unread inbox messages..."):
+                    results = fetch_leave_mails_only(gmail_email, gmail_pass)
                     st.session_state.leave_results = results
-                st.success(f"Successfully processed {len(results)} items!")
+                st.success(f"Successfully synced {len(results)} items!")
             except Exception as ex:
                 st.error(f"Error: {ex}")
 
     st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("Clear Processing Feed 🗑️"):
-        st.session_state.leave_results = None
-        st.rerun()
+    
+    if st.button("Reply Mail ➔"):
+        if not st.session_state.is_connected:
+            st.warning("Please sign in from the sidebar first!")
+        elif not st.session_state.leave_results:
+            st.warning("No synced emails available to reply. Run Smart Sync first!")
+        else:
+            try:
+                with st.spinner("Dispatching responses securely..."):
+                    count = dispatch_replies_gmail(gmail_email, gmail_pass, st.session_state.leave_results)
+                st.success(f"Successfully dispatched {count} replies!")
+                st.rerun()
+            except Exception as ex:
+                st.error(f"Error: {ex}")
 
 with feed_col:
-    st.markdown("<h3 style='color:#ffffff; font-weight:700;'>📥 Processed Feed</h3>", unsafe_allow_html=True)
+    # Header row with small clear button aligned to the right
+    feed_head_col1, feed_head_col2 = st.columns([7, 3])
+    with feed_head_col1:
+        st.markdown("<h3 style='color:#ffffff; font-weight:700; margin-top:0;'>📥 Processed Feed</h3>", unsafe_allow_html=True)
+    with feed_head_col2:
+        if st.button("Clear Feed 🗑️", key="clear_feed_btn"):
+            st.session_state.leave_results = None
+            st.rerun()
     
     if st.session_state.leave_results is None:
-        st.info("System on standby. Trigger sync from the control panel.")
+        st.info("System on standby. Run Smart Sync to load inbox requests.")
     elif len(st.session_state.leave_results) == 0:
         st.warning("No new relevant leave requests found.")
     else:
