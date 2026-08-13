@@ -156,13 +156,29 @@ st.markdown(
         color: #ffedd5 !important;
         font-weight: 600;
     }
+    [data-testid="stSidebar"] .stCheckbox label {
+        color: #ffedd5 !important;
+        font-weight: 600;
+    }
     </style>
     """,
     unsafe_allow_html=True
 )
 
 # ==========================================
-# GMAIL LOGIC (Smart Sync & Dispatch Separate)
+# SESSION STATE INITIALIZATION FOR PERSISTENCE
+# ==========================================
+if 'is_connected' not in st.session_state:
+    st.session_state.is_connected = False
+if 'saved_email' not in st.session_state:
+    st.session_state.saved_email = "yarayaseen@gmail.com"
+if 'saved_pass' not in st.session_state:
+    st.session_state.saved_pass = ""
+if 'remember_credentials' not in st.session_state:
+    st.session_state.remember_credentials = True
+
+# ==========================================
+# GMAIL LOGIC
 # ==========================================
 def fetch_leave_mails_only(email_user, email_pass):
     if 'processed_emails' not in st.session_state:
@@ -269,29 +285,41 @@ def dispatch_replies_gmail(email_user, email_pass, items):
     return success_count
 
 # ==========================================
-# SIDEBAR SETUP
+# SIDEBAR SETUP (WITH CREDENTIAL PERSISTENCE)
 # ==========================================
-if 'is_connected' not in st.session_state:
-    st.session_state.is_connected = False
-
 with st.sidebar:
     st.markdown("<h3 style='color:#ffffff; font-weight:800; margin-bottom:20px;'>⚙️ Gmail Gateway</h3>", unsafe_allow_html=True)
-    gmail_email = st.text_input("Email", value="yarayaseen@gmail.com")
-    gmail_pass = st.text_input("Password", type="password", placeholder="Enter 16-digit password...")
     
+    # Inputs bound to session state values so they remain populated
+    input_email = st.text_input("Email", value=st.session_state.saved_email)
+    input_pass = st.text_input("Password", value=st.session_state.saved_pass, type="password", placeholder="Enter 16-digit password...")
+    
+    # Checkbox to lock/unlock credentials retention
+    remember = st.checkbox("Remember Credentials (Lock)", value=st.session_state.remember_credentials)
+    st.session_state.remember_credentials = remember
+
     if st.button("Login ➔"):
-        if not gmail_pass:
+        if not input_pass:
             st.warning("Please enter your Password!")
         else:
             try:
                 test_mail = imaplib.IMAP4_SSL("imap.gmail.com", 993)
-                test_mail.login(gmail_email, gmail_pass)
+                test_mail.login(input_email, input_pass)
                 test_mail.logout()
                 st.session_state.is_connected = True
+                st.session_state.saved_email = input_email
+                if remember:
+                    st.session_state.saved_pass = input_pass
+                else:
+                    st.session_state.saved_pass = ""
                 st.success("Connected Securely!")
             except Exception as e:
                 st.session_state.is_connected = False
                 st.error("Invalid Credentials!")
+
+    # If remember checkbox is unchecked manually, clear stored password immediately
+    if not remember:
+        st.session_state.saved_pass = ""
 
     st.markdown("<hr style='border-color: rgba(255,255,255,0.2);'>", unsafe_allow_html=True)
     if st.session_state.is_connected:
@@ -338,7 +366,7 @@ with control_col:
         else:
             try:
                 with st.spinner("Scanning unread inbox messages..."):
-                    results = fetch_leave_mails_only(gmail_email, gmail_pass)
+                    results = fetch_leave_mails_only(st.session_state.saved_email, st.session_state.saved_pass)
                     st.session_state.leave_results = results
                 st.success(f"Successfully synced {len(results)} items!")
             except Exception as ex:
@@ -354,7 +382,7 @@ with control_col:
         else:
             try:
                 with st.spinner("Dispatching responses securely..."):
-                    count = dispatch_replies_gmail(gmail_email, gmail_pass, st.session_state.leave_results)
+                    count = dispatch_replies_gmail(st.session_state.saved_email, st.session_state.saved_pass, st.session_state.leave_results)
                 st.success(f"Successfully dispatched {count} replies!")
                 st.rerun()
             except Exception as ex:
