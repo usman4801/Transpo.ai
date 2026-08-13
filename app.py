@@ -18,7 +18,7 @@ st.set_page_config(
 )
 
 # ==========================================
-# CUSTOM THEME (Deep Purple + Vibrant Orange + White)
+# FRESH ULTIMATE THEME (Purple + White + Orange)
 # ==========================================
 st.markdown(
     """
@@ -28,107 +28,110 @@ st.markdown(
     footer {visibility: hidden;}
     
     .stApp {
-        background: linear-gradient(135deg, #0d061a 0%, #1a103c 50%, #2e1a5e 100%);
-        font-family: 'Inter', 'Segoe UI', sans-serif;
+        background: radial-gradient(circle at 50% 0%, #2e1065 0%, #0f0728 60%, #030014 100%);
+        font-family: 'Inter', sans-serif;
         color: #ffffff;
     }
     
     .block-container {
-        padding-top: 2.5rem !important;
-        padding-bottom: 2.5rem !important;
+        padding-top: 2rem !important;
+        padding-bottom: 3rem !important;
     }
     
-    .dash-title {
-        font-size: 42px;
+    /* Hero Header Section */
+    .hero-box {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 140, 0, 0.25);
+        border-radius: 24px;
+        padding: 35px 40px;
+        backdrop-filter: blur(20px);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .hero-title {
+        font-size: 38px;
         font-weight: 900;
-        background: linear-gradient(135deg, #ffffff 0%, #ffd8a8 50%, #ff851b 100%);
+        color: #ffffff;
+        letter-spacing: -1px;
+        margin: 0;
+    }
+    .hero-title span {
+        background: linear-gradient(135deg, #ff922b 0%, #ff6b6b 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 0px;
-        letter-spacing: -1px;
     }
-    .dash-subtitle {
-        color: #d8b4fe;
-        font-size: 15px;
+    .hero-subtitle {
+        color: #e2e8f0;
+        font-size: 14px;
+        margin-top: 8px;
         font-weight: 400;
-        margin-bottom: 35px;
     }
 
-    .organic-pill-card {
-        background: rgba(26, 16, 60, 0.7);
-        backdrop-filter: blur(25px);
-        -webkit-backdrop-filter: blur(25px);
-        border: 1px solid rgba(255, 133, 27, 0.3);
-        border-radius: 20px; 
-        padding: 30px 20px;
+    /* Modern Metric Cards */
+    .stat-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-top: 4px solid #ff922b;
+        border-radius: 16px;
+        padding: 20px;
         text-align: center;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
-    .organic-pill-card:hover {
-        transform: translateY(-4px);
-        border-color: rgba(255, 133, 27, 0.7);
-        box-shadow: 0 25px 50px rgba(255, 133, 27, 0.2);
-    }
-    .metric-value { font-size: 38px; font-weight: 900; color: #ff922b; text-shadow: 0 0 20px rgba(255, 133, 27, 0.4); }
-    .metric-label { font-size: 11px; color: #e9d5ff; font-weight: 800; text-transform: uppercase; letter-spacing: 2.5px; margin-top: 6px; }
+    .stat-num { font-size: 32px; font-weight: 900; color: #ffffff; }
+    .stat-lbl { font-size: 11px; color: #cbd5e1; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 5px; }
 
+    /* Custom Buttons */
     .stButton>button {
-        background: linear-gradient(135deg, #ff922b 0%, #f76707 100%) !important;
+        background: linear-gradient(135deg, #ff922b 0%, #e8590c 100%) !important;
         color: #ffffff !important;
         font-size: 15px !important;
         font-weight: 700 !important;
         border-radius: 12px !important;
         border: none !important;
-        padding: 12px 20px !important;
+        padding: 12px 24px !important;
         width: 100%;
-        box-shadow: 0 10px 25px rgba(247, 103, 7, 0.4) !important;
+        box-shadow: 0 10px 25px rgba(232, 89, 12, 0.4) !important;
         transition: all 0.3s ease !important;
     }
     .stButton>button:hover {
+        transform: translateY(-2px);
         box-shadow: 0 15px 35px rgba(255, 146, 43, 0.6) !important;
-        transform: scale(1.02);
-        background: linear-gradient(135deg, #ffa94d 0%, #e8590c 100%) !important;
+        background: linear-gradient(135deg, #ffa94d 0%, #f76707 100%) !important;
     }
 
-    .glass-email-card {
-        background: rgba(26, 16, 60, 0.5);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 20px 24px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    /* Email Feed Cards */
+    .mail-item {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         border-left: 5px solid #ff922b;
-        margin-bottom: 16px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        transition: transform 0.2s ease;
+        padding: 20px;
+        border-radius: 14px;
+        margin-bottom: 15px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
     }
-    .glass-email-card:hover {
-        transform: translateX(4px);
-        background: rgba(26, 16, 60, 0.8);
+    .mail-item h4 { margin: 0; color: #ffffff; font-size: 16px; font-weight: 700; }
+    .mail-item p { margin: 4px 0 0 0; color: #cbd5e1; font-size: 13px; }
+    
+    .badge-tag {
+        background: rgba(255, 146, 43, 0.15);
+        border: 1px solid rgba(255, 146, 43, 0.4);
+        color: #ffd8a8;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        display: inline-block;
     }
 
-    .email-details h4 { margin: 0; color: #ffffff; font-size: 17px; font-weight: 700; }
-    .email-details p { margin: 5px 0 0 0; color: #e9d5ff; font-size: 13px; }
-    
-    .neon-badge {
-        padding: 6px 14px;
-        border-radius: 30px;
-        font-size: 11px;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        display: inline-block;
-        background: rgba(255, 146, 43, 0.15);
-        color: #ffd8a8;
-        border: 1px solid rgba(255, 146, 43, 0.4);
-    }
-    
+    /* Sidebar Styling */
     [data-testid="stSidebar"] {
-        background: #0d061a;
-        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        background: #090319;
+        border-right: 1px solid rgba(255, 255, 255, 0.06);
     }
     </style>
     """,
@@ -136,7 +139,7 @@ st.markdown(
 )
 
 # ==========================================
-# GMAIL SMART LEAVE AUTO-REPLY LOGIC
+# GMAIL LOGIC
 # ==========================================
 def fetch_and_reply_leave_gmail(email_user, email_pass, target_inbox):
     if 'processed_emails' not in st.session_state:
@@ -172,7 +175,6 @@ def fetch_and_reply_leave_gmail(email_user, email_pass, target_inbox):
                         continue
                     
                     from_whom = msg.get("From", "").lower()
-                    
                     if any(bad in from_whom for bad in ignore_senders):
                         continue
 
@@ -194,10 +196,10 @@ def fetch_and_reply_leave_gmail(email_user, email_pass, target_inbox):
 
                     if any(word in body_lower for word in sick_keywords):
                         category = "Sick Leave"
-                        reply_text = f"Dear Employee,\n\nYour sick leave request has been received and noted. Rest well and take care of your health.\n\nBest Regards,\nHR Team"
+                        reply_text = f"Dear Employee,\n\nYour sick leave request has been received and noted. Rest well.\n\nBest Regards,\nHR Team"
                     elif any(word in body_lower for word in personal_keywords):
                         category = "Personal / Annual Leave"
-                        reply_text = f"Dear Employee,\n\nYour leave request has been received and noted. Thank you for informing us in time.\n\nBest Regards,\nHR Team"
+                        reply_text = f"Dear Employee,\n\nYour leave request has been received and noted.\n\nBest Regards,\nHR Team"
                     else:
                         continue 
 
@@ -235,7 +237,7 @@ def fetch_and_reply_leave_gmail(email_user, email_pass, target_inbox):
         raise e
 
 # ==========================================
-# SIDEBAR CONTROLS & SIGN-IN
+# SIDEBAR SETUP
 # ==========================================
 if 'is_connected' not in st.session_state:
     st.session_state.is_connected = False
@@ -243,9 +245,9 @@ if 'is_connected' not in st.session_state:
 with st.sidebar:
     st.markdown("<h3 style='color:#ffffff; font-weight:800; margin-bottom:20px;'>⚙️ Gmail Gateway</h3>", unsafe_allow_html=True)
     gmail_email = st.text_input("HR Inbox Email", value="yarayaseen@gmail.com")
-    gmail_pass = st.text_input("Gmail App Password", type="password", placeholder="Enter 16-digit app password...")
+    gmail_pass = st.text_input("Gmail App Password", type="password", placeholder="Enter 16-digit password...")
     
-    if st.button("Sign In ➔"):
+    if st.button("Authenticate Hub ➔"):
         if not gmail_pass:
             st.warning("Please enter your App Password!")
         else:
@@ -254,84 +256,88 @@ with st.sidebar:
                 test_mail.login(gmail_email, gmail_pass)
                 test_mail.logout()
                 st.session_state.is_connected = True
-                st.success("Signed In Successfully!")
+                st.success("Connected Securely!")
             except Exception as e:
                 st.session_state.is_connected = False
-                st.error("Authentication Failed! Use Google 'App Password'.")
+                st.error("Invalid Credentials!")
 
     st.markdown("<hr style='border-color: rgba(255,255,255,0.08);'>", unsafe_allow_html=True)
-    
     if st.session_state.is_connected:
-        st.markdown("<p style='color:#4ade80; font-size:13px; font-weight:600;'>System Status: 🟢 Connected</p>", unsafe_allow_html=True)
+        st.markdown("<p style='color:#4ade80; font-size:13px; font-weight:600;'>Status: 🟢 Live & Synced</p>", unsafe_allow_html=True)
     else:
-        st.markdown("<p style='color:#f87171; font-size:13px; font-weight:600;'>System Status: 🔴 Not Connected</p>", unsafe_allow_html=True)
+        st.markdown("<p style='color:#f87171; font-size:13px; font-weight:600;'>Status: 🔴 Disconnected</p>", unsafe_allow_html=True)
 
 # ==========================================
-# MAIN DASHBOARD HEADER
+# MAIN LAYOUT
 # ==========================================
-st.markdown('<div class="dash-title">Workforce MailSync AI ✨</div>', unsafe_allow_html=True)
-st.markdown('<div class="dash-subtitle">Next-Gen Intelligent Same-Day Leave & Annual Response System</div>', unsafe_allow_html=True)
+st.markdown("""
+    <div class="hero-box">
+        <div>
+            <div class="hero-title">Workforce MailSync <span>AI</span></div>
+            <div class="hero-subtitle">Automated Intelligent Leave Response & Workforce Inbox Monitoring Suite</div>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
 
-# Cards Row
-col1, col2, col3 = st.columns(3)
-with col1:
-    st.markdown('<div class="organic-pill-card"><div class="metric-value">--</div><div class="metric-label">Today Scanned</div></div>', unsafe_allow_html=True)
-with col2:
-    st.markdown('<div class="organic-pill-card"><div class="metric-value" style="color:#ffb703;">--</div><div class="metric-label">Replies Dispatched</div></div>', unsafe_allow_html=True)
-with col3:
-    st.markdown('<div class="organic-pill-card"><div class="metric-value" style="color:#ff922b;">100%</div><div class="metric-label">Context Match</div></div>', unsafe_allow_html=True)
+# Metrics Grid
+col_m1, col_m2, col_m3 = st.columns(3)
+with col_m1:
+    st.markdown('<div class="stat-card"><div class="stat-num">--</div><div class="stat-lbl">Today Scanned</div></div>', unsafe_allow_html=True)
+with col_m2:
+    st.markdown('<div class="stat-card"><div class="stat-num" style="color:#ff922b;">--</div><div class="stat-lbl">Dispatched Replies</div></div>', unsafe_allow_html=True)
+with col_m3:
+    st.markdown('<div class="stat-card"><div class="stat-num" style="color:#e2e8f0;">100%</div><div class="stat-lbl">AI Context Match</div></div>', unsafe_allow_html=True)
 
-st.markdown("<br><br>", unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
-# ==========================================
-# LIVE SCANNER SECTION
-# ==========================================
+# Action Hub & Feed Layout
 if 'leave_results' not in st.session_state:
     st.session_state.leave_results = None
 
-action_col, text_col = st.columns([3, 7])
+control_col, feed_col = st.columns([4, 6])
 
-with action_col:
-    st.markdown("<h3 style='color:#ffffff; font-weight:700;'>🤖 Live Mail Sync</h3>", unsafe_allow_html=True)
-    st.write("Scan unread inbox mail and trigger context-aware smart auto-replies instantly.")
+with control_col:
+    st.markdown("<h3 style='color:#ffffff; font-weight:700;'>🤖 Control Center</h3>", unsafe_allow_html=True)
+    st.write("Trigger inbox scanning to process incoming leave requests with AI parsing.")
     
-    if st.button("Fetch & Smart Auto-Reply ➔"):
+    if st.button("Run Smart Sync & Reply ➔"):
         if not st.session_state.is_connected:
-            st.warning("Please sign in with your App Password from the sidebar first!")
+            st.warning("Please sign in from the sidebar first!")
         else:
             try:
-                with st.spinner("Analyzing leave requests securely..."):
+                with st.spinner("Processing unread inbox messages..."):
                     results = fetch_and_reply_leave_gmail(gmail_email, gmail_pass, gmail_email)
                     st.session_state.leave_results = results
-                st.success(f"Done! Processed {len(results)} requests.")
+                st.success(f"Successfully processed {len(results)} items!")
             except Exception as ex:
                 st.error(f"Error: {ex}")
 
     st.markdown("<br>", unsafe_allow_html=True)
-    
-    if st.button("Clear Feed 🗑️"):
+    if st.button("Clear Processing Feed 🗑️"):
         st.session_state.leave_results = None
         st.rerun()
 
-with text_col:
-    st.markdown("<h3 style='color:#ffffff; font-weight:700;'>📥 Processed Leave Feed</h3>", unsafe_allow_html=True)
+with feed_col:
+    st.markdown("<h3 style='color:#ffffff; font-weight:700;'>📥 Processed Feed</h3>", unsafe_allow_html=True)
     
     if st.session_state.leave_results is None:
-        st.info("Awaiting manual trigger. Click the left button to begin scanning.")
+        st.info("System on standby. Trigger sync from the control panel.")
     elif len(st.session_state.leave_results) == 0:
-        st.warning("No new matching leave requests found in the inbox.")
+        st.warning("No new relevant leave requests found.")
     else:
         for item in st.session_state.leave_results:
             card_html = f"""
-            <div class="glass-email-card">
-                <div class="email-details">
-                    <h4>{item['title']}</h4>
-                    <p><b>From:</b> {item['from']}</p>
-                    <p style="color:#e9d5ff;"><i>{item['summary']}</i></p>
-                </div>
-                <div style="text-align: right;">
-                    <span class="neon-badge">{item['category']}</span><br>
-                    <p style="margin-top:8px; font-size:12px; color:#ffb703;"><b>{item['action']}</b></p>
+            <div class="mail-item">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div>
+                        <h4>{item['title']}</h4>
+                        <p><b>From:</b> {item['from']}</p>
+                        <p style="color:#cbd5e1; margin-top:6px;"><i>{item['summary']}</i></p>
+                    </div>
+                    <div style="text-align:right; min-width:110px;">
+                        <span class="badge-tag">{item['category']}</span><br>
+                        <span style="font-size:11px; color:#ff922b; font-weight:700; display:inline-block; margin-top:6px;">{item['action']}</span>
+                    </div>
                 </div>
             </div>
             """
