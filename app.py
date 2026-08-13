@@ -18,7 +18,7 @@ st.set_page_config(
 )
 
 # ==========================================
-# MODERN PROFESSIONAL THEME (Deep Navy + Slate + Amber)
+# MODERN PURPLE + WHITE + DEEP THEME
 # ==========================================
 st.markdown(
     """
@@ -28,9 +28,9 @@ st.markdown(
     footer {visibility: hidden;}
     
     .stApp {
-        background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e293b 100%);
+        background: linear-gradient(135deg, #090514 0%, #17102b 50%, #291b4e 100%);
         font-family: 'Inter', 'Segoe UI', sans-serif;
-        color: #f8fafc;
+        color: #ffffff;
     }
     
     .block-container {
@@ -41,63 +41,64 @@ st.markdown(
     .dash-title {
         font-size: 42px;
         font-weight: 900;
-        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+        background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 50%, #c084fc 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         margin-bottom: 0px;
         letter-spacing: -1px;
     }
     .dash-subtitle {
-        color: #94a3b8;
+        color: #cbd5e1;
         font-size: 15px;
         font-weight: 400;
         margin-bottom: 35px;
     }
 
     .organic-pill-card {
-        background: rgba(30, 41, 59, 0.7);
+        background: rgba(255, 255, 255, 0.05);
         backdrop-filter: blur(25px);
         -webkit-backdrop-filter: blur(25px);
-        border: 1px solid rgba(245, 158, 11, 0.2);
+        border: 1px solid rgba(192, 132, 252, 0.25);
         border-radius: 20px; 
         padding: 30px 20px;
         text-align: center;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
         transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .organic-pill-card:hover {
         transform: translateY(-4px);
-        border-color: rgba(245, 158, 11, 0.5);
-        box-shadow: 0 25px 50px rgba(245, 158, 11, 0.15);
+        border-color: rgba(192, 132, 252, 0.6);
+        box-shadow: 0 25px 50px rgba(147, 51, 234, 0.2);
     }
-    .metric-value { font-size: 38px; font-weight: 900; color: #fbbf24; text-shadow: 0 0 20px rgba(245, 158, 11, 0.4); }
-    .metric-label { font-size: 11px; color: #94a3b8; font-weight: 800; text-transform: uppercase; letter-spacing: 2.5px; margin-top: 6px; }
+    .metric-value { font-size: 38px; font-weight: 900; color: #ffffff; text-shadow: 0 0 20px rgba(192, 132, 252, 0.5); }
+    .metric-label { font-size: 11px; color: #cbd5e1; font-weight: 800; text-transform: uppercase; letter-spacing: 2.5px; margin-top: 6px; }
 
     .stButton>button {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
-        color: #020617 !important;
+        background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%) !important;
+        color: #ffffff !important;
         font-size: 15px !important;
         font-weight: 700 !important;
         border-radius: 12px !important;
-        border: none !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
         padding: 12px 20px !important;
         width: 100%;
-        box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3) !important;
+        box-shadow: 0 10px 25px rgba(147, 51, 234, 0.4) !important;
         transition: all 0.3s ease !important;
     }
     .stButton>button:hover {
-        box-shadow: 0 15px 35px rgba(245, 158, 11, 0.5) !important;
+        box-shadow: 0 15px 35px rgba(168, 85, 247, 0.6) !important;
         transform: scale(1.02);
+        background: linear-gradient(135deg, #c084fc 0%, #9333ea 100%) !important;
     }
 
     .glass-email-card {
-        background: rgba(30, 41, 59, 0.5);
+        background: rgba(255, 255, 255, 0.04);
         backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         padding: 20px 24px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        border-left: 5px solid #f59e0b;
+        border-left: 5px solid #c084fc;
         margin-bottom: 16px;
         display: flex;
         justify-content: space-between;
@@ -106,11 +107,11 @@ st.markdown(
     }
     .glass-email-card:hover {
         transform: translateX(4px);
-        background: rgba(30, 41, 59, 0.8);
+        background: rgba(255, 255, 255, 0.08);
     }
 
-    .email-details h4 { margin: 0; color: #f1f5f9; font-size: 17px; font-weight: 700; }
-    .email-details p { margin: 5px 0 0 0; color: #94a3b8; font-size: 13px; }
+    .email-details h4 { margin: 0; color: #ffffff; font-size: 17px; font-weight: 700; }
+    .email-details p { margin: 5px 0 0 0; color: #cbd5e1; font-size: 13px; }
     
     .neon-badge {
         padding: 6px 14px;
@@ -120,14 +121,14 @@ st.markdown(
         text-transform: uppercase;
         letter-spacing: 0.5px;
         display: inline-block;
-        background: rgba(245, 158, 11, 0.15);
-        color: #fbbf24;
-        border: 1px solid rgba(245, 158, 11, 0.3);
+        background: rgba(192, 132, 252, 0.15);
+        color: #e9d5ff;
+        border: 1px solid rgba(192, 132, 252, 0.4);
     }
     
     [data-testid="stSidebar"] {
-        background: #020617;
-        border-right: 1px solid rgba(255, 255, 255, 0.06);
+        background: #0f081d;
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
     }
     </style>
     """,
@@ -240,7 +241,7 @@ if 'is_connected' not in st.session_state:
     st.session_state.is_connected = False
 
 with st.sidebar:
-    st.markdown("<h3 style='color:#f8fafc; font-weight:800; margin-bottom:20px;'>⚙️ Gmail Gateway</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color:#ffffff; font-weight:800; margin-bottom:20px;'>⚙️ Gmail Gateway</h3>", unsafe_allow_html=True)
     gmail_email = st.text_input("HR Inbox Email", value="yarayaseen@gmail.com")
     gmail_pass = st.text_input("Gmail App Password", type="password", placeholder="Enter 16-digit app password...")
     
@@ -276,7 +277,7 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.markdown('<div class="organic-pill-card"><div class="metric-value">--</div><div class="metric-label">Today Scanned</div></div>', unsafe_allow_html=True)
 with col2:
-    st.markdown('<div class="organic-pill-card"><div class="metric-value" style="color:#38bdf8;">--</div><div class="metric-label">Replies Dispatched</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="organic-pill-card"><div class="metric-value" style="color:#e879f9;">--</div><div class="metric-label">Replies Dispatched</div></div>', unsafe_allow_html=True)
 with col3:
     st.markdown('<div class="organic-pill-card"><div class="metric-value" style="color:#c084fc;">100%</div><div class="metric-label">Context Match</div></div>', unsafe_allow_html=True)
 
@@ -291,7 +292,7 @@ if 'leave_results' not in st.session_state:
 action_col, text_col = st.columns([3, 7])
 
 with action_col:
-    st.markdown("<h3 style='color:#f8fafc; font-weight:700;'>🤖 Live Mail Sync</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color:#ffffff; font-weight:700;'>🤖 Live Mail Sync</h3>", unsafe_allow_html=True)
     st.write("Scan unread inbox mail and trigger context-aware smart auto-replies instantly.")
     
     if st.button("Fetch & Smart Auto-Reply ➔"):
@@ -313,7 +314,7 @@ with action_col:
         st.rerun()
 
 with text_col:
-    st.markdown("<h3 style='color:#f8fafc; font-weight:700;'>📥 Processed Leave Feed</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color:#ffffff; font-weight:700;'>📥 Processed Leave Feed</h3>", unsafe_allow_html=True)
     
     if st.session_state.leave_results is None:
         st.info("Awaiting manual trigger. Click the left button to begin scanning.")
@@ -326,11 +327,11 @@ with text_col:
                 <div class="email-details">
                     <h4>{item['title']}</h4>
                     <p><b>From:</b> {item['from']}</p>
-                    <p style="color:#cbd5e1;"><i>{item['summary']}</i></p>
+                    <p style="color:#e2e8f0;"><i>{item['summary']}</i></p>
                 </div>
                 <div style="text-align: right;">
                     <span class="neon-badge">{item['category']}</span><br>
-                    <p style="margin-top:8px; font-size:12px; color:#38bdf8;"><b>{item['action']}</b></p>
+                    <p style="margin-top:8px; font-size:12px; color:#e879f9;"><b>{item['action']}</b></p>
                 </div>
             </div>
             """
