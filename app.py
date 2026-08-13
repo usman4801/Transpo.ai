@@ -181,7 +181,7 @@ if 'sent_history' not in st.session_state:
 if 'today_scanned_count' not in st.session_state:
     st.session_state.today_scanned_count = 0
 if 'lock_credentials' not in st.session_state:
-    st.session_state.lock_credentials = True  # Default locked / read-only
+    st.session_state.lock_credentials = True
 
 # ==========================================
 # HELPER: EXTRACT SENDER NAME
@@ -259,23 +259,37 @@ def fetch_leave_mails_only(email_user, email_pass):
                     emp_name = extract_sender_name(from_whom_raw)
                     salutation = f"Dear {emp_name}," if emp_name else "Hello,"
 
+                    # HTML Email Body with Official Amazon Logo Image
                     if any(word in body_lower for word in sick_keywords):
                         category = "Sick Leave"
-                        reply_text = (
-                            f"{salutation}\n\n"
-                            "Your sick leave request has been received and noted. Rest well. "
-                            "Kindly bring the medical certificate once you resume work.\n\n"
-                            "Regards,\n"
-                            "Amazon PXT Team"
-                        )
+                        html_reply = f"""
+                        <html>
+                          <body style="font-family: Arial, sans-serif; color: #333333; line-height: 1.6;">
+                            <p>{salutation}</p>
+                            <p>Your sick leave request has been received and noted. Rest well. Kindly bring the medical certificate once you resume work.</p>
+                            <br>
+                            <p style="margin: 0;">Regards,</p>
+                            <div style="margin-top: 5px;">
+                              <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9.svg" alt="Amazon" style="width: 110px; height: auto;" />
+                            </div>
+                          </body>
+                        </html>
+                        """
                     elif any(word in body_lower for word in personal_keywords):
                         category = "Personal / Annual Leave"
-                        reply_text = (
-                            f"{salutation}\n\n"
-                            "Your leave request has been received and noted. Thank you for informing us in time.\n\n"
-                            "Regards,\n"
-                            "Amazon PXT Team"
-                        )
+                        html_reply = f"""
+                        <html>
+                          <body style="font-family: Arial, sans-serif; color: #333333; line-height: 1.6;">
+                            <p>{salutation}</p>
+                            <p>Your leave request has been received and noted. Thank you for informing us in time.</p>
+                            <br>
+                            <p style="margin: 0;">Regards,</p>
+                            <div style="margin-top: 5px;">
+                              <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9.svg" alt="Amazon" style="width: 110px; height: auto;" />
+                            </div>
+                          </body>
+                        </html>
+                        """
                     else:
                         continue 
 
@@ -285,7 +299,7 @@ def fetch_leave_mails_only(email_user, email_pass):
                         "from": from_whom_raw,
                         "summary": body[:90] + "...",
                         "category": category,
-                        "reply_text": reply_text,
+                        "reply_html": html_reply,
                         "action": "Pending Reply ⏳"
                     })
 
@@ -307,11 +321,13 @@ def dispatch_replies_gmail(email_user, email_pass, items):
             smtp_server.starttls()
             smtp_server.login(email_user, email_pass)
             
-            msg_reply = MIMEMultipart()
+            msg_reply = MIMEMultipart("alternative")
             msg_reply['From'] = email_user
             msg_reply['To'] = item['from']
             msg_reply['Subject'] = f"Re: {item['title']}"
-            msg_reply.attach(MIMEText(item['reply_text'], 'plain'))
+            
+            # Attach HTML content so the Amazon logo renders properly
+            msg_reply.attach(MIMEText(item['reply_html'], 'html'))
             
             smtp_server.sendmail(email_user, item['from'], msg_reply.as_string())
             smtp_server.quit()
@@ -325,7 +341,7 @@ def dispatch_replies_gmail(email_user, email_pass, items):
                 "to": item['from'],
                 "subject": item['title'],
                 "category": item['category'],
-                "body": item['reply_text'],
+                "body": item['reply_html'],
                 "time": current_time
             })
             
@@ -335,12 +351,11 @@ def dispatch_replies_gmail(email_user, email_pass, items):
     return success_count
 
 # ==========================================
-# SIDEBAR SETUP (WITH LOCK/UNLOCK FEATURE)
+# SIDEBAR SETUP
 # ==========================================
 with st.sidebar:
     st.markdown("<h3 style='color:#ffffff; font-weight:800; margin-bottom:20px;'>⚙️ Gmail Gateway</h3>", unsafe_allow_html=True)
     
-    # Checkbox to lock/unlock inputs
     lock_state = st.checkbox("Lock Credentials (Read-Only)", value=st.session_state.lock_credentials)
     st.session_state.lock_credentials = lock_state
     
@@ -372,7 +387,7 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# Metrics Grid (Crystal Cards) with Live Date & Counters
+# Metrics Grid (Crystal Cards)
 current_date_day = datetime.datetime.now().strftime("%d %b %Y (%A)")
 total_scanned = st.session_state.today_scanned_count
 total_dispatched = len(st.session_state.sent_history)
@@ -481,7 +496,6 @@ with feed_col:
             st.info("No dispatched replies found in the sent history yet.")
         else:
             for sent_item in reversed(st.session_state.sent_history):
-                formatted_body = sent_item['body'].replace('\n', '<br>')
                 sent_card_html = f"""
                 <div class="mail-item" style="border-left-color: #4ade80;">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
@@ -490,8 +504,10 @@ with feed_col:
                             <p><b>To:</b> {sent_item['to']}</p>
                             <p style="color:#94a3b8; font-size:11px; margin-top:2px;"><b>Time:</b> {sent_item['time']}</p>
                             <details style="margin-top: 8px; color: #cbd5e1; font-size: 12px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px;">
-                                <summary style="cursor: pointer; color: #ff922b; font-weight: 600;">View Exact Sent Reply</summary>
-                                <p style="margin-top: 6px; color: #f1f5f9;">{formatted_body}</p>
+                                <summary style="cursor: pointer; color: #ff922b; font-weight: 600;">View Exact Sent HTML Reply</summary>
+                                <div style="margin-top: 6px; background: #ffffff; padding: 10px; border-radius: 6px; color: #333333;">
+                                    {sent_item['body']}
+                                </div>
                             </details>
                         </div>
                         <div style="text-align:right; min-width:110px;">
