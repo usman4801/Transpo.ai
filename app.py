@@ -300,7 +300,8 @@ if 'leave_results' not in st.session_state:
 control_col, feed_col = st.columns([4, 6])
 
 with control_col:
-    st.markdown("<h3 style='color:#ffffff; font-weight:700;'>📬 Auh1-fc-pxt@amazon.ae</h3>", unsafe_allow_html=True)
+    # Font size adjusted to 23px so the long email fits perfectly on a single line
+    st.markdown("<h3 style='color:#ffffff; font-weight:700; font-size:23px; white-space:nowrap;'>📬 Auh1-fc-pxt@amazon.ae</h3>", unsafe_allow_html=True)
     st.write("Trigger inbox scanning to process incoming leave requests with AI parsing.")
     
     if st.button("Run Smart Sync & Reply ➔"):
