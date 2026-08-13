@@ -18,7 +18,7 @@ st.set_page_config(
 )
 
 # ==========================================
-# CUSTOM THEME (Orange Sidebar + White Hero Box)
+# CUSTOM THEME (Orange Sidebar + Crystal Cards)
 # ==========================================
 st.markdown(
     """
@@ -70,17 +70,37 @@ st.markdown(
         font-weight: 500;
     }
 
-    /* Modern Metric Cards */
+    /* Shiny Crystal Mail Cards */
     .stat-card {
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-top: 4px solid #ff922b;
-        border-radius: 16px;
-        padding: 20px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 100%);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 146, 43, 0.4);
+        border-top: 2px solid rgba(255, 255, 255, 0.6);
+        border-radius: 18px;
+        padding: 24px 20px;
         text-align: center;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 15px 35px rgba(0, 0, 0, 0.4);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
     }
-    .stat-num { font-size: 32px; font-weight: 900; color: #ffffff; }
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -50%;
+        width: 200%;
+        height: 50%;
+        background: linear-gradient(to bottom, rgba(255, 255, 255, 0.08), transparent);
+        pointer-events: none;
+    }
+    .stat-card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(255, 146, 43, 0.8);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 20px 40px rgba(255, 146, 43, 0.15);
+    }
+    .stat-num { font-size: 32px; font-weight: 900; color: #ffffff; text-shadow: 0 0 15px rgba(255, 146, 43, 0.3); }
     .stat-lbl { font-size: 11px; color: #cbd5e1; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 5px; }
 
     /* Custom Buttons */
@@ -291,7 +311,7 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# Metrics Grid
+# Metrics Grid (Crystal Cards)
 col_m1, col_m2, col_m3 = st.columns(3)
 with col_m1:
     st.markdown('<div class="stat-card"><div class="stat-num">--</div><div class="stat-lbl">Today Scanned</div></div>', unsafe_allow_html=True)
