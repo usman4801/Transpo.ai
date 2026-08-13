@@ -7,6 +7,7 @@ from email.header import decode_header
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import re
 
 # ==========================================
 # PAGE CONFIGURATION
@@ -156,26 +157,36 @@ st.markdown(
         color: #ffedd5 !important;
         font-weight: 600;
     }
-    [data-testid="stSidebar"] .stCheckbox label {
-        color: #ffedd5 !important;
-        font-weight: 600;
-    }
     </style>
     """,
     unsafe_allow_html=True
 )
 
 # ==========================================
-# SESSION STATE INITIALIZATION FOR PERSISTENCE
+# SESSION STATE INITIALIZATION
 # ==========================================
 if 'is_connected' not in st.session_state:
-    st.session_state.is_connected = False
+    st.session_state.is_connected = True
 if 'saved_email' not in st.session_state:
     st.session_state.saved_email = "yarayaseen@gmail.com"
 if 'saved_pass' not in st.session_state:
     st.session_state.saved_pass = ""
-if 'remember_credentials' not in st.session_state:
-    st.session_state.remember_credentials = True
+
+# ==========================================
+# HELPER: EXTRACT SENDER NAME
+# ==========================================
+def extract_sender_name(from_header):
+    if '<' in from_header and '>' in from_header:
+        name_part = from_header.split('<')[0].strip(' "\'')
+        if name_part and '@' not in name_part:
+            return name_part
+    email_match = re.search(r'[\w\.-]+@[\w\.-]+', from_header)
+    if email_match:
+        local_part = email_match.group(0).split('@')[0]
+        cleaned = re.sub(r'[\._-', ' ', local_part).title()
+        if cleaned.lower() not in ['hr', 'support', 'admin', 'no reply', 'noreply']:
+            return cleaned
+    return None
 
 # ==========================================
 # GMAIL LOGIC
@@ -213,8 +224,10 @@ def fetch_leave_mails_only(email_user, email_pass):
                     if msg_id in st.session_state.processed_emails:
                         continue
                     
-                    from_whom = msg.get("From", "").lower()
-                    if any(bad in from_whom for bad in ignore_senders):
+                    from_whom_raw = msg.get("From", "")
+                    from_whom_lower = from_whom_raw.lower()
+                    
+                    if any(bad in from_whom_lower for bad in ignore_senders):
                         continue
 
                     body = ""
@@ -231,21 +244,36 @@ def fetch_leave_mails_only(email_user, email_pass):
                     personal_keywords = ["personal reason", "family issue", "emergency", "urgent work", "cant come", "can't come", "not coming", "chutti", "leave", "absent"]
 
                     category = ""
-                    reply_text = ""
+                    
+                    emp_name = extract_sender_name(from_whom_raw)
+                    salutation = f"Dear {emp_name}," if emp_name else "Hello,"
 
                     if any(word in body_lower for word in sick_keywords):
                         category = "Sick Leave"
-                        reply_text = f"Dear Employee,\n\nYour sick leave request has been received and noted. Rest well.\n\nBest Regards,\nHR Team"
+                        reply_text = (
+                            f"{salutation}\n\n"
+                            "Your sick leave request has been received and noted. Rest well. "
+                            "Kindly bring the medical certificate once you resume work.\n\n"
+                            "Regards,\n"
+                            "Muhammad Usman\n"
+                            "amazon"
+                        )
                     elif any(word in body_lower for word in personal_keywords):
                         category = "Personal / Annual Leave"
-                        reply_text = f"Dear Employee,\n\nYour leave request has been received and noted.\n\nBest Regards,\nHR Team"
+                        reply_text = (
+                            f"{salutation}\n\n"
+                            "Your leave request has been received and noted. Thank you for informing us in time.\n\n"
+                            "Regards,\n"
+                            "Muhammad Usman\n"
+                            "amazon"
+                        )
                     else:
                         continue 
 
                     fetched_logs.append({
                         "msg_id": msg_id,
                         "title": subject[:40],
-                        "from": from_whom,
+                        "from": from_whom_raw,
                         "summary": body[:90] + "...",
                         "category": category,
                         "reply_text": reply_text,
@@ -285,47 +313,25 @@ def dispatch_replies_gmail(email_user, email_pass, items):
     return success_count
 
 # ==========================================
-# SIDEBAR SETUP (WITH CREDENTIAL PERSISTENCE)
+# SIDEBAR SETUP
 # ==========================================
 with st.sidebar:
     st.markdown("<h3 style='color:#ffffff; font-weight:800; margin-bottom:20px;'>⚙️ Gmail Gateway</h3>", unsafe_allow_html=True)
     
-    # Inputs bound to session state values so they remain populated
     input_email = st.text_input("Email", value=st.session_state.saved_email)
     input_pass = st.text_input("Password", value=st.session_state.saved_pass, type="password", placeholder="Enter 16-digit password...")
     
-    # Checkbox to lock/unlock credentials retention
-    remember = st.checkbox("Remember Credentials (Lock)", value=st.session_state.remember_credentials)
-    st.session_state.remember_credentials = remember
-
-    if st.button("Login ➔"):
+    if st.button("Update / Save Credentials ➔"):
         if not input_pass:
             st.warning("Please enter your Password!")
         else:
-            try:
-                test_mail = imaplib.IMAP4_SSL("imap.gmail.com", 993)
-                test_mail.login(input_email, input_pass)
-                test_mail.logout()
-                st.session_state.is_connected = True
-                st.session_state.saved_email = input_email
-                if remember:
-                    st.session_state.saved_pass = input_pass
-                else:
-                    st.session_state.saved_pass = ""
-                st.success("Connected Securely!")
-            except Exception as e:
-                st.session_state.is_connected = False
-                st.error("Invalid Credentials!")
-
-    # If remember checkbox is unchecked manually, clear stored password immediately
-    if not remember:
-        st.session_state.saved_pass = ""
+            st.session_state.saved_email = input_email
+            st.session_state.saved_pass = input_pass
+            st.session_state.is_connected = True
+            st.success("Credentials Locked & Saved Permanently!")
 
     st.markdown("<hr style='border-color: rgba(255,255,255,0.2);'>", unsafe_allow_html=True)
-    if st.session_state.is_connected:
-        st.markdown("<p style='color:#bbf7d0; font-size:13px; font-weight:700;'>Status: 🟢 Live & Synced</p>", unsafe_allow_html=True)
-    else:
-        st.markdown("<p style='color:#fecaca; font-size:13px; font-weight:700;'>Status: 🔴 Disconnected</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#bbf7d0; font-size:13px; font-weight:700;'>Status: 🟢 Always Connected</p>", unsafe_allow_html=True)
 
 # ==========================================
 # MAIN LAYOUT
@@ -361,8 +367,8 @@ with control_col:
     st.write("Trigger inbox scanning to process incoming leave requests with AI parsing.")
     
     if st.button("Run Smart Sync ➔"):
-        if not st.session_state.is_connected:
-            st.warning("Please sign in from the sidebar first!")
+        if not st.session_state.saved_pass:
+            st.warning("Please configure your Password in the sidebar first!")
         else:
             try:
                 with st.spinner("Scanning unread inbox messages..."):
@@ -375,8 +381,8 @@ with control_col:
     st.markdown("<br>", unsafe_allow_html=True)
     
     if st.button("Reply Mail ➔"):
-        if not st.session_state.is_connected:
-            st.warning("Please sign in from the sidebar first!")
+        if not st.session_state.saved_pass:
+            st.warning("Please configure your Password in the sidebar first!")
         elif not st.session_state.leave_results:
             st.warning("No synced emails available to reply. Run Smart Sync first!")
         else:
@@ -389,7 +395,6 @@ with control_col:
                 st.error(f"Error: {ex}")
 
 with feed_col:
-    # Header row with small clear button aligned to the right
     feed_head_col1, feed_head_col2 = st.columns([7, 3])
     with feed_head_col1:
         st.markdown("<h3 style='color:#ffffff; font-weight:700; margin-top:0;'>📥 Processed Feed</h3>", unsafe_allow_html=True)
